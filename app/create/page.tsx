@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
@@ -32,7 +32,9 @@ export default function CreatePage() {
   const [article, setArticle] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
+
     if (!userId) {
       toast.error("Please sign in to create content");
       return;
@@ -145,7 +147,10 @@ export default function CreatePage() {
           </div>
 
           {/* Input Section */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl shadow-black/5 p-6 sm:p-8">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 shadow-xl shadow-black/5 p-6 sm:p-8"
+          >
             <Tabs
               value={inputType}
               onValueChange={(v) => setInputType(v as "topic" | "article")}
@@ -233,7 +238,7 @@ export default function CreatePage() {
             {/* Submit Button */}
             <div className="mt-10 pt-8 border-t border-white/10">
               <Button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={isSubmitting}
                 className="w-full bg-foreground text-background hover:bg-foreground/90 py-6 text-lg rounded-xl shadow-sm transition-all"
                 size="lg"
@@ -252,7 +257,7 @@ export default function CreatePage() {
                 )}
               </Button>
             </div>
-          </div>
+          </form>
         </AnimatedGroup>
       </main>
     </div>

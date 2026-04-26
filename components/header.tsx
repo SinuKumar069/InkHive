@@ -6,22 +6,57 @@ import { Logo } from "./logo"
 import { Menu, Plus, X } from "lucide-react"
 import { Show, SignInButton, UserButton } from "@clerk/nextjs"
 import { Button } from "./ui/button"
+import type { MouseEvent } from "react"
 
 
 const menuItems = [
-    { name: 'How it works', href: '#how-it-works' },
-    { name: 'Integrations', href: '#integrations' },
+    { name: 'How it works', href: '/#how-it-works' },
+    { name: 'Integrations', href: '/#integrations' },
 ]
 
 export const Header = () => {
     const [menuState, setMenuState] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
 
+    const handleMenuClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+        const [path, hash] = href.split("#")
+
+        if (hash && window.location.pathname === path) {
+            event.preventDefault()
+            setMenuState(false)
+            window.history.pushState(null, "", href)
+            document.getElementById(hash)?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            })
+            return
+        }
+
+        if (hash) {
+            sessionStorage.setItem("center-section-scroll", hash)
+            setMenuState(false)
+        }
+    }
+
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50)
         }
         window.addEventListener('scroll', handleScroll)
+
+        const hash = window.location.hash.slice(1)
+        const shouldCenterSection = sessionStorage.getItem("center-section-scroll") === hash
+
+        if (hash && shouldCenterSection) {
+            sessionStorage.removeItem("center-section-scroll")
+            requestAnimationFrame(() => {
+                document.getElementById(hash)?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                })
+            })
+        }
+
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
     return (
@@ -58,6 +93,7 @@ export const Header = () => {
                                     <li key={index}>
                                         <Link
                                             href={item.href}
+                                            onClick={(event) => handleMenuClick(event, item.href)}
                                             className="text-muted-foreground hover:text-accent-foreground block duration-150">
                                             <span>{item.name}</span>
                                         </Link>
@@ -73,6 +109,7 @@ export const Header = () => {
                                         <li key={index}>
                                             <Link
                                                 href={item.href}
+                                                onClick={(event) => handleMenuClick(event, item.href)}
                                                 className="text-muted-foreground hover:text-accent-foreground block duration-150">
                                                 <span>{item.name}</span>
                                             </Link>

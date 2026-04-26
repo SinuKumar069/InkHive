@@ -8,77 +8,103 @@ import { BorderBeam } from '@/components/ui/border-beam'
 
 export default function HowitWorks() {
     type ImageKey = 'item-1' | 'item-2' | 'item-3' | 'item-4'
+    const [accordionValue, setAccordionValue] = useState<ImageKey | ''>('item-1')
     const [activeItem, setActiveItem] = useState<ImageKey>('item-1')
+
+    const handleAccordionChange = (value: string) => {
+        setAccordionValue(value as ImageKey | '')
+
+        if (value) {
+            setActiveItem(value as ImageKey)
+        }
+    }
 
     const images = {
         'item-1': {
             image: '/charts.png',
-            alt: 'Database visualization',
+            alt: 'Content planning and analytics',
         },
         'item-2': {
             image: '/music.png',
-            alt: 'Security authentication',
+            alt: 'AI collaboration and drafting',
         },
         'item-3': {
             image: '/mail2.png',
-            alt: 'Identity management',
+            alt: 'Publishing and scheduling',
         },
         'item-4': {
             image: '/payments.png',
-            alt: 'Analytics dashboard',
+            alt: 'Performance and growth',
         },
     }
 
     return (
-        <section className="py-12 md:py-20 lg:py-32">
+        <section id="how-it-works" className="scroll-mt-24 py-12 md:py-20 lg:py-32">
             <div className="bg-linear-to-b absolute inset-0 -z-10 sm:inset-6 sm:rounded-b-3xl dark:block dark:to-[color-mix(in_oklab,var(--color-zinc-900)_75%,var(--color-background))]"></div>
             <div className="mx-auto max-w-5xl space-y-8 px-6 md:space-y-16 lg:space-y-20 dark:[--color-border:color-mix(in_oklab,var(--color-white)_10%,transparent)]">
                 <div className="relative z-10 mx-auto max-w-2xl space-y-6 text-center">
-                    <h2 className="text-balance text-4xl font-semibold lg:text-6xl">How it works</h2>
-                    <p>Our multi-agent AI pipeline transforms your ideas into a complete content ecosystem in seconds, not hours.</p>
+                    <h2 className="text-balance text-4xl font-semibold lg:text-6xl">How InkHive Works</h2>
+                    <p>Turn one idea into a complete content campaign with AI agents that research, write, optimize, and prepare your content for publishing.</p>
                 </div>
 
                 <div className="grid gap-12 sm:px-12 md:grid-cols-2 lg:gap-20 lg:px-0">
                     <Accordion
                         type="single"
-                        value={activeItem}
-                        onValueChange={(value) => setActiveItem(value as ImageKey)}
+                        collapsible
+                        value={accordionValue}
+                        onValueChange={handleAccordionChange}
                         className="w-full">
                         <AccordionItem value="item-1">
                             <AccordionTrigger>
                                 <div className="flex items-center gap-2 text-base">
                                     <Database className="size-4" />
-                                    Start with an Idea
+                                    Start with a Topic or Article
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent>Lyra is evolving to be more than just the models. It supports an entire to the APIs and platforms helping developers and businesses innovate.</AccordionContent>
+                            <AccordionContent>
+                                <p className="mb-2">Enter a fresh topic or paste an existing article. InkHive analyzes your input, understands the core message, and prepares it for a full content generation workflow.</p>
+                                <ol className="ml-4 list-decimal text-sm">
+                                    <li>Use a topic to create new content from scratch</li>
+                                    <li>Use an article to repurpose existing content</li>
+                                    <li>Prepare the input for blog, social, email, and SEO assets</li>
+                                </ol>
+                            </AccordionContent>
                         </AccordionItem>
+
                         <AccordionItem value="item-2">
                             <AccordionTrigger>
                                 <div className="flex items-center gap-2 text-base">
                                     <Fingerprint className="size-4" />
-                                    AI Magic Happens
+                                    Generate Content Assets
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent>Lyra is evolving to be more than just the models. It supports an entire to the APIs and platforms helping developers and businesses innovate.</AccordionContent>
+                            <AccordionContent>
+                                <p>Specialized AI agents create the full content package: blog post, social captions, email newsletter, SEO title, meta description, and keywords.</p>
+                            </AccordionContent>
                         </AccordionItem>
+
                         <AccordionItem value="item-3">
                             <AccordionTrigger>
                                 <div className="flex items-center gap-2 text-base">
                                     <IdCard className="size-4" />
-                                    Publish Everywhere
+                                    Review and Customize
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent>Lyra is evolving to be more than just the models. It supports an entire to the APIs and platforms helping developers and businesses innovate.</AccordionContent>
+                            <AccordionContent>
+                                <p>Edit the generated content, adjust the tone, improve sections, and make every output match your brand voice before publishing.</p>
+                            </AccordionContent>
                         </AccordionItem>
+
                         <AccordionItem value="item-4">
                             <AccordionTrigger>
                                 <div className="flex items-center gap-2 text-base">
                                     <ChartBarIncreasingIcon className="size-4" />
-                                    Analytics Dashboard
+                                    Publish and Grow
                                 </div>
                             </AccordionTrigger>
-                            <AccordionContent>Lyra is evolving to be more than just the models. It supports an entire to the APIs and platforms helping developers and businesses innovate.</AccordionContent>
+                            <AccordionContent>
+                                <p>Use your ready-to-publish assets across your blog, social channels, newsletter, and SEO workflow to grow traffic and engagement.</p>
+                            </AccordionContent>
                         </AccordionItem>
                     </Accordion>
 

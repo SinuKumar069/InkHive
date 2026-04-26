@@ -7,7 +7,7 @@ import { Email } from './ui/svgs/email'
 
 export default function IntegrationsSection() {
     return (
-        <section>
+        <section id="integrations" className="scroll-mt-24">
             <div className="bg-muted dark:bg-background py-24 md:py-32">
                 <div className="mx-auto max-w-5xl px-6">
                     <div className="mx-auto max-w-md px-6 mask-[radial-gradient(ellipse_100%_100%_at_50%_0%,#000_70%,transparent_100%)]">
