@@ -133,14 +133,11 @@ export default function CreatePage() {
         <AnimatedGroup variants={transitionVariants}>
           {/* Hero text */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-white/5 border border-white/10 shadow-sm shadow-black/10 backdrop-blur-sm">
-              <Cpu className="w-8 h-8 text-foreground" />
-            </div>
             <h1 className="text-3xl md:text-5xl font-medium tracking-tight text-foreground mb-4">
               Initialize Generation
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Provide a seed topic or paste an existing article. Our multi-agent AI will process it and build out your content empire.
+              Provide topic or paste an existing article. Our multi-agent AI will process it and build out your content empire.
             </p>
           </div>
 

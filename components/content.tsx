@@ -1,23 +1,60 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { formatDate, truncateText } from "@/lib/utils";
-import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Cpu, Box } from "lucide-react";
+import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Cpu, Box, MoreVertical, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedGroup } from "@/components/ui/animated-group";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from 'sonner';
+import { Id } from '@/convex/_generated/dataModel';
+import { DeleteResource } from '@/components/delete-resource';
+import { useUser } from '@clerk/nextjs';
 
 const transitionVariants = {
-  item: {
-    hidden: { opacity: 0, y: 12, filter: "blur(12px)" },
-    visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 } },
-  },
+    item: {
+        hidden: { opacity: 0, y: 12, filter: "blur(12px)" },
+        visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 } },
+    },
 };
 
 export default function Content() {
     const projects = useQuery(api.contentProjects.getUserProjects);
+    const deleteProject = useMutation(api.contentProjects.deleteProject);
+    const { user, isLoaded } = useUser();
+
+    const [projectToDelete, setProjectToDelete] = useState<{ id: Id<"contentProjects">, name: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = async () => {
+        if (!projectToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await deleteProject({ projectId: projectToDelete.id });
+            toast.success("Project deleted successfully");
+            setProjectToDelete(null);
+        } catch (error) {
+            toast.error("Failed to delete project");
+            console.error(error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const confirmDelete = (e: React.MouseEvent, id: Id<"contentProjects">, name: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setProjectToDelete({ id, name });
+    };
 
     return (
         <main className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-15 lg:py-35 pt-20 md:pt-20 lg:pt-25 xl:pt-30 relative z-10">
@@ -29,7 +66,7 @@ export default function Content() {
                         <div className="flex items-center gap-3 mb-3">
                             <Cpu className="w-6 h-6 text-primary" />
                             <h1 className="text-3xl font-medium tracking-tight text-foreground">
-                                Welcome back!
+                                Welcome {isLoaded ? user?.firstName : "back"}
                             </h1>
                         </div>
                         <p className="text-muted-foreground text-lg max-w-2xl">
@@ -115,6 +152,23 @@ export default function Content() {
                                                 {formatDate(project.createdAt)}
                                             </p>
                                         </div>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 -mr-2">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                    <span className="sr-only">Open menu</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-40 rounded-xl bg-background/95 backdrop-blur-md border-white/10">
+                                                <DropdownMenuItem
+                                                    onClick={(e) => confirmDelete(e, project._id, project.blogPost?.title || truncateText(project.inputContent, 50))}
+                                                    className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <span>Delete</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
 
                                     <p className="text-sm text-muted-foreground line-clamp-2 mb-5">
@@ -171,6 +225,15 @@ export default function Content() {
                     ))}
                 </AnimatedGroup>
             )}
+
+            <DeleteResource
+                open={!!projectToDelete}
+                onOpenChange={(open) => !open && setProjectToDelete(null)}
+                resourceType="Project"
+                resourceName={projectToDelete?.name || ""}
+                onDelete={handleDelete}
+                isDeleting={isDeleting}
+            />
         </main>
     )
 }

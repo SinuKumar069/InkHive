@@ -43,7 +43,7 @@ export default function RootLayout({
               {children}
             </TooltipProvider>
             <Toaster 
-              position="top-center" 
+              position="bottom-right" 
               toastOptions={{
                 style: {
                   background: '#FAFAF9',
