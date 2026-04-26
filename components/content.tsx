@@ -75,69 +75,51 @@ export default function Content() {
                     </div>
                 </div>
 
-                {/* Projects Section Header */}
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl font-medium tracking-tight text-foreground mb-1">Your Content Empire</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Manage and publish your AI-generated assets
-                        </p>
-                    </div>
-                    {projects && projects.length > 0 && (
-                        <Link href="/create">
-                            <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-xl shadow-sm">
-                                <Plus className="h-4 w-4 mr-2" />
-                                New Task
-                            </Button>
-                        </Link>
-                    )}
-                </div>
-            </AnimatedGroup>
+        {/* Projects Section Header */}
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-medium tracking-tight text-foreground mb-1">
+              Your Content Empire
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Manage and publish your AI-generated assets
+            </p>
+          </div>
+          {projects && projects.length > 0 && (
+            <Link href="/create">
+              <Button className="bg-foreground text-background hover:bg-foreground/90 rounded-xl shadow-sm">
+                <Plus className="h-4 w-4 mr-2" />
+                New Task
+              </Button>
+            </Link>
+          )}
+        </div>
+      </AnimatedGroup>
 
-            {projects === undefined ? (
-                <div className="flex justify-center py-20">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            ) : projects.length === 0 ? (
-                /* Empty State */
-                <AnimatedGroup variants={transitionVariants}>
-                    <Card className="bg-white/5 border-white/10 shadow-sm backdrop-blur-sm rounded-3xl overflow-hidden relative">
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
-                        <CardContent className="pt-16 pb-16 text-center relative z-10">
-                            <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 shadow-sm shadow-black/10">
-                                <Box className="w-10 h-10 text-primary" />
-                            </div>
-                            <h3 className="text-2xl font-medium tracking-tight text-foreground mb-3">
-                                No projects found
-                            </h3>
-                            <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg">
-                                Initialize your first content seed and let our AI agents build a thriving ecosystem for you.
-                            </p>
-                            <Link href="/create">
-                                <Button
-                                    size="lg"
-                                    className="bg-foreground text-background hover:bg-foreground/90 rounded-xl shadow-sm px-8"
-                                >
-                                    <Cpu className="h-5 w-5 mr-2" />
-                                    Initialize First Task
-                                    <ArrowRight className="h-5 w-5 ml-2" />
-                                </Button>
-                            </Link>
-                        </CardContent>
-                    </Card>
-                </AnimatedGroup>
-            ) : (
-                /* Projects Grid */
-                <AnimatedGroup
-                    variants={{
-                        container: {
-                            visible: {
-                                transition: { staggerChildren: 0.05, delayChildren: 0.2 },
-                            },
-                        },
-                        ...transitionVariants,
-                    }}
-                    className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+      {projects === undefined ? (
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : projects.length === 0 ? (
+        /* Empty State */
+        <AnimatedGroup variants={transitionVariants}>
+          <Card className="bg-white/5 border-white/10 shadow-sm backdrop-blur-sm rounded-3xl overflow-hidden relative">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
+            <CardContent className="pt-16 pb-16 text-center relative z-10">
+              <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 shadow-sm shadow-black/10">
+                <Box className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-medium tracking-tight text-foreground mb-3">
+                No projects found
+              </h3>
+              <p className="text-muted-foreground mb-8 max-w-md mx-auto text-lg">
+                Initialize your first content seed and let our AI agents build a
+                thriving ecosystem for you.
+              </p>
+              <Link href="/create">
+                <Button
+                  size="lg"
+                  className="bg-foreground text-background hover:bg-foreground/90 rounded-xl shadow-sm px-8"
                 >
                     {projects.map((project) => (
                         <Link key={project._id} href={`/dashboard/${project._id}`} className="block h-full group">
@@ -171,37 +153,46 @@ export default function Content() {
                                         </DropdownMenu>
                                     </div>
 
-                                    <p className="text-sm text-muted-foreground line-clamp-2 mb-5">
-                                        {project.blogPost?.excerpt || `Source: ${truncateText(project.inputContent, 100)}`}
-                                    </p>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-5">
+                    {project.blogPost?.excerpt ||
+                      `Source: ${truncateText(project.inputContent, 100)}`}
+                  </p>
 
-                                    {/* Content Types Preview */}
-                                    <div className="flex items-center gap-2 flex-wrap mt-auto">
-                                        {project.blogPost && (
-                                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
-                                                <FileText className="w-3 h-3 text-foreground" />
-                                                <span className="text-[11px] font-medium text-muted-foreground">Blog</span>
-                                            </div>
-                                        )}
-                                        {project.socialPosts && (
-                                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
-                                                <Share2 className="w-3 h-3 text-foreground" />
-                                                <span className="text-[11px] font-medium text-muted-foreground">Social</span>
-                                            </div>
-                                        )}
-                                        {project.emailNewsletter && (
-                                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
-                                                <Mail className="w-3 h-3 text-foreground" />
-                                                <span className="text-[11px] font-medium text-muted-foreground">Email</span>
-                                            </div>
-                                        )}
-                                        {project.seoMetadata && (
-                                            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
-                                                <Globe className="w-3 h-3 text-foreground" />
-                                                <span className="text-[11px] font-medium text-muted-foreground">SEO</span>
-                                            </div>
-                                        )}
-                                    </div>
+                  {/* Content Types Preview */}
+                  <div className="flex items-center gap-2 flex-wrap mt-auto">
+                    {project.blogPost && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
+                        <FileText className="w-3 h-3 text-foreground" />
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          Blog
+                        </span>
+                      </div>
+                    )}
+                    {project.socialPosts && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
+                        <Share2 className="w-3 h-3 text-foreground" />
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          Social
+                        </span>
+                      </div>
+                    )}
+                    {project.emailNewsletter && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
+                        <Mail className="w-3 h-3 text-foreground" />
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          Email
+                        </span>
+                      </div>
+                    )}
+                    {project.seoMetadata && (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-md">
+                        <Globe className="w-3 h-3 text-foreground" />
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          SEO
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                                     {/* Published Platforms */}
                                     {project.publishedTo && project.publishedTo.length > 0 && (

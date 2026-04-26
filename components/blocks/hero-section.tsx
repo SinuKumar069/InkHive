@@ -1,7 +1,10 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AnimatedGroup } from '@/components/ui/animated-group'
+import type { MouseEvent } from 'react'
 
 
 const transitionVariants = {
@@ -25,6 +28,15 @@ const transitionVariants = {
 }
 
 export function HeroSection() {
+    const scrollToHowItWorks = (event: MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault()
+        window.history.pushState(null, '', '/#how-it-works')
+        document.getElementById('how-it-works')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+        })
+    }
+
     return (
             <main className="overflow-hidden">
                 <div
@@ -76,7 +88,8 @@ export function HeroSection() {
                             <div className="text-center sm:mx-auto lg:mr-auto lg:mt-6">
                                 <AnimatedGroup variants={transitionVariants}>
                                     <Link
-                                        href="#link"
+                                        href="/#how-it-works"
+                                        onClick={scrollToHowItWorks}
                                         className="bg-white/5 hover:bg-white/10 group mx-auto flex w-fit items-center gap-4 rounded-full border border-white/10 p-1 pl-4 shadow-sm shadow-black/10 backdrop-blur-sm transition-all duration-300">
                                         <span className="text-foreground text-sm">Multi-agent AI content system</span>
                                         <span className="block h-4 w-0.5 border-l border-white/10 bg-white/25"></span>
@@ -133,7 +146,7 @@ export function HeroSection() {
                                         size="lg"
                                         variant="ghost"
                                         className="h-10.5 rounded-xl px-5">
-                                        <Link href="#link">
+                                        <Link href="/#how-it-works" onClick={scrollToHowItWorks}>
                                             <span className="text-nowrap">See How It Works</span>
                                         </Link>
                                     </Button>
@@ -158,18 +171,18 @@ export function HeroSection() {
                                     aria-hidden
                                     className="bg-linear-to-b to-background absolute inset-0 z-10 from-transparent from-35%"
                                 />
-                                <div className="inset-shadow-2xs bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-white/10 p-4 shadow-lg shadow-zinc-950/20 ring-1 ring-white/10">
+                                <div className="inset-shadow-2xs bg-background relative mx-auto max-w-7xl overflow-hidden rounded-2xl border border-white/10 p-4 shadow-lg shadow-zinc-950/20 ring-1 ring-white/10">
                                     <img
                                         className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
-                                        src="https://tailark.com//_next/image?url=%2Fmail2.png&w=3840&q=75"
-                                        alt="app screen"
+                                        src="/inkhive-dashboard-preview.svg"
+                                        alt="InkHive dashboard preview"
                                         width="2700"
                                         height="1440"
                                     />
                                     <img
                                         className="z-2 aspect-15/8 relative rounded-2xl border border-white/10 dark:hidden"
-                                        src="https://tailark.com/_next/image?url=%2Fmail2-light.png&w=3840&q=75"
-                                        alt="app screen"
+                                        src="/inkhive-dashboard-preview.svg"
+                                        alt="InkHive dashboard preview"
                                         width="2700"
                                         height="1440"
                                     />
