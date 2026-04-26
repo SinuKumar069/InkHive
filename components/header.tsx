@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Logo } from "./logo"
-import { Menu, Plus, X } from "lucide-react"
+import { LayoutDashboardIcon, Menu, X } from "lucide-react"
 import { Show, SignInButton, UserButton } from "@clerk/nextjs"
 import { Button } from "./ui/button"
 
@@ -87,10 +87,10 @@ export const Header = () => {
                                     </SignInButton>
                                 </Show>
                                 <Show when="signed-in">
-                                    <Link href="/create">
-                                        <Button variant="outline" className="w-full">
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            New Content
+                                    <Link href="/dashboard">
+                                        <Button className="w-full">
+                                            <LayoutDashboardIcon className="h-4 w-4 mr-2" />
+                                            Dashboard
                                         </Button>
                                     </Link>
                                     
