@@ -124,49 +124,60 @@ export default function DashboardPage() {
         </header>
 
         <main className="flex flex-1 flex-col gap-6 p-4 pt-4 md:p-6">
-          <section className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
-                  <Box className="h-5 w-5 text-foreground" />
+          <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-md">
+            <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-primary/10 blur-[100px]" />
+            
+            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 shadow-inner">
+                  <Box className="h-6 w-6 text-primary" />
                 </div>
-                <div className="min-w-0">
-                  <h1 className="line-clamp-1 text-base font-semibold tracking-tight text-foreground md:text-lg">
-                    {project.blogPost?.title || "AI Content Task"}
-                  </h1>
-                  <p className="line-clamp-1 text-xs text-muted-foreground md:text-sm">
-                    {project.inputType === "topic" ? "Seed" : "Source article"}: {project.inputContent}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="truncate text-lg font-bold tracking-tight text-foreground md:text-xl">
+                      {project.blogPost?.title || "AI Content Task"}
+                    </h1>
+                    <Badge variant="outline" className="hidden h-4 border-white/10 bg-white/5 px-1.5 py-0 text-[10px] uppercase tracking-wider text-muted-foreground md:flex">
+                      {project.inputType}
+                    </Badge>
+                  </div>
+                  <p className="line-clamp-1 text-xs text-muted-foreground md:text-sm max-w-2xl">
+                    <span className="font-medium text-foreground/60">{project.inputType === "topic" ? "Topic" : "Article"}:</span> {project.inputContent}
                   </p>
                 </div>
               </div>
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to dashboard
-              </Link>
+              
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                <Link
+                  href="/dashboard"
+                  className="group flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
+                >
+                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                  <span className="hidden sm:inline">Back to Dashboard</span>
+                  <span className="sm:hidden">Back</span>
+                </Link>
+              </div>
             </div>
 
-            {project.status === "generating" && (
-              <div className="mt-4 rounded-lg border border-white/10 bg-background/40 p-4">
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                    <Sparkles className="h-4 w-4 animate-pulse text-primary" />
-                    Agents processing... {progress}%
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {completedJobs} / {totalJobs} complete
-                  </span>
+              {project.status === "generating" && (
+                <div className="mt-4 rounded-lg border border-white/10 bg-background/40 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Sparkles className="h-4 w-4 animate-pulse text-primary" />
+                      Agents processing... {progress}%
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {completedJobs} / {totalJobs} complete
+                    </span>
+                  </div>
+                  <Progress value={progress} aria-label="Agent processing progress" className="h-1.5" />
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {Object.entries(jobs).map(([name, status]) => (
+                      <JobStatusBadge key={name} name={name} status={status} />
+                    ))}
+                  </div>
                 </div>
-                <Progress value={progress} aria-label="Agent processing progress" className="h-1.5" />
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {Object.entries(jobs).map(([name, status]) => (
-                    <JobStatusBadge key={name} name={name} status={status} />
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
           </section>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">

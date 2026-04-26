@@ -1,48 +1,79 @@
-import React from "react";
+import React, { useState } from 'react'
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { formatDate, truncateText } from "@/lib/utils";
-import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Cpu, Box } from "lucide-react";
+import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Cpu, Box, MoreVertical, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedGroup } from "@/components/ui/animated-group";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from 'sonner';
+import { Id } from '@/convex/_generated/dataModel';
+import { DeleteResource } from '@/components/delete-resource';
+import { useUser } from '@clerk/nextjs';
 
 const transitionVariants = {
-  item: {
-    hidden: { opacity: 0, y: 12, filter: "blur(12px)" },
-    visible: {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 },
+    item: {
+        hidden: { opacity: 0, y: 12, filter: "blur(12px)" },
+        visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring" as const, bounce: 0.3, duration: 1.5 } },
     },
-  },
 };
 
 export default function Content() {
-  const projects = useQuery(api.contentProjects.getUserProjects);
+    const projects = useQuery(api.contentProjects.getUserProjects);
+    const deleteProject = useMutation(api.contentProjects.deleteProject);
+    const { user, isLoaded } = useUser();
 
-  return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-15 lg:py-35 pt-20 md:pt-20 lg:pt-25 xl:pt-30 relative z-10">
-      <AnimatedGroup variants={transitionVariants}>
-        {/* Welcome Banner */}
-        <div className="mb-10 p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-3">
-              <Cpu className="w-6 h-6 text-primary" />
-              <h1 className="text-3xl font-medium tracking-tight text-foreground">
-                Welcome back!
-              </h1>
-            </div>
-            <p className="text-muted-foreground text-lg max-w-2xl">
-              Ready to expand your content empire? Start a new generation task
-              or manage your existing AI projects.
-            </p>
-          </div>
-        </div>
+    const [projectToDelete, setProjectToDelete] = useState<{ id: Id<"contentProjects">, name: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDelete = async () => {
+        if (!projectToDelete) return;
+
+        setIsDeleting(true);
+        try {
+            await deleteProject({ projectId: projectToDelete.id });
+            toast.success("Project deleted successfully");
+            setProjectToDelete(null);
+        } catch (error) {
+            toast.error("Failed to delete project");
+            console.error(error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const confirmDelete = (e: React.MouseEvent, id: Id<"contentProjects">, name: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setProjectToDelete({ id, name });
+    };
+
+    return (
+        <main className="max-w-7xl mx-auto px-4 sm:px-10 lg:px-15 lg:py-35 pt-20 md:pt-20 lg:pt-25 xl:pt-30 relative z-10">
+            <AnimatedGroup variants={transitionVariants}>
+                {/* Welcome Banner */}
+                <div className="mb-10 p-8 bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-3">
+                            <Cpu className="w-6 h-6 text-primary" />
+                            <h1 className="text-3xl font-medium tracking-tight text-foreground">
+                                Welcome {isLoaded ? user?.firstName : "back"}
+                            </h1>
+                        </div>
+                        <p className="text-muted-foreground text-lg max-w-2xl">
+                            Ready to expand your content empire? Start a new generation task or manage your existing AI projects.
+                        </p>
+                    </div>
+                </div>
 
         {/* Projects Section Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -90,46 +121,37 @@ export default function Content() {
                   size="lg"
                   className="bg-foreground text-background hover:bg-foreground/90 rounded-xl shadow-sm px-8"
                 >
-                  <Cpu className="h-5 w-5 mr-2" />
-                  Initialize First Task
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </AnimatedGroup>
-      ) : (
-        /* Projects Grid */
-        <AnimatedGroup
-          variants={{
-            container: {
-              visible: {
-                transition: { staggerChildren: 0.05, delayChildren: 0.2 },
-              },
-            },
-            ...transitionVariants,
-          }}
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {projects.map((project) => (
-            <Link
-              key={project._id}
-              href={`/dashboard/${project._id}`}
-              className="block h-full group"
-            >
-              <Card className="h-full bg-white/5 border-white/10 shadow-sm hover:shadow-md hover:bg-white/10 transition-all duration-300 rounded-2xl overflow-hidden relative">
-                <CardContent className="p-6 relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 pr-4">
-                      <h3 className="font-medium tracking-tight text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-                        {project.blogPost?.title ||
-                          truncateText(project.inputContent, 50)}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(project.createdAt)}
-                      </p>
-                    </div>
-                  </div>
+                    {projects.map((project) => (
+                        <Link key={project._id} href={`/dashboard/${project._id}`} className="block h-full group">
+                            <Card className="h-full bg-white/5 border-white/10 shadow-sm hover:shadow-md hover:bg-white/10 transition-all duration-300 rounded-2xl overflow-hidden relative">
+                                <CardContent className="p-6 relative z-10">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex-1 pr-4">
+                                            <h3 className="font-medium tracking-tight text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+                                                {project.blogPost?.title || truncateText(project.inputContent, 50)}
+                                            </h3>
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatDate(project.createdAt)}
+                                            </p>
+                                        </div>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 -mr-2">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                    <span className="sr-only">Open menu</span>
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-40 rounded-xl bg-background/95 backdrop-blur-md border-white/10">
+                                                <DropdownMenuItem
+                                                    onClick={(e) => confirmDelete(e, project._id, project.blogPost?.title || truncateText(project.inputContent, 50))}
+                                                    className="text-red-500 focus:text-red-500 focus:bg-red-500/10 cursor-pointer"
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <span>Delete</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
 
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-5">
                     {project.blogPost?.excerpt ||
@@ -172,28 +194,37 @@ export default function Content() {
                     )}
                   </div>
 
-                  {/* Published Platforms */}
-                  {project.publishedTo && project.publishedTo.length > 0 && (
-                    <div className="mt-5 pt-4 border-t border-white/10">
-                      <div className="flex flex-wrap gap-1.5">
-                        {project.publishedTo.map((platform) => (
-                          <Badge
-                            key={platform}
-                            variant="secondary"
-                            className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase tracking-wider"
-                          >
-                            {platform}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </AnimatedGroup>
-      )}
-    </main>
-  );
+                                    {/* Published Platforms */}
+                                    {project.publishedTo && project.publishedTo.length > 0 && (
+                                        <div className="mt-5 pt-4 border-t border-white/10">
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {project.publishedTo.map((platform) => (
+                                                    <Badge
+                                                        key={platform}
+                                                        variant="secondary"
+                                                        className="bg-primary/10 text-primary border-primary/20 text-[10px] uppercase tracking-wider"
+                                                    >
+                                                        {platform}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
+                </AnimatedGroup>
+            )}
+
+            <DeleteResource
+                open={!!projectToDelete}
+                onOpenChange={(open) => !open && setProjectToDelete(null)}
+                resourceType="Project"
+                resourceName={projectToDelete?.name || ""}
+                onDelete={handleDelete}
+                isDeleting={isDeleting}
+            />
+        </main>
+    )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useUser } from "@clerk/nextjs"
+import { UserButton, useUser } from "@clerk/nextjs"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 
@@ -23,6 +23,7 @@ import {
   PlusIcon,
 } from "lucide-react"
 import { Logo } from "./logo"
+import Link from "next/link"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser()
@@ -70,6 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const projectLinks = React.useMemo(
     () =>
       (projects ?? []).slice(0, 8).map((project) => ({
+        id: project._id,
         name: project.blogPost?.title ?? project.inputContent.slice(0, 36),
         url: `/dashboard/${project._id}`,
         icon: <FileTextIcon />,
@@ -79,9 +81,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="pt-5">
         {/* <TeamSwitcher teams={teams} /> */}
-        <Logo/>
+        <Link
+          href="/"
+          aria-label="home"
+          className="flex items-center space-x-2">
+          <Logo />
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />

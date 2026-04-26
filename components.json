@@ -24,7 +24,6 @@
   "registries": {
     "@tailark": "https://tailark.com/r/{name}.json",
     "@motion-primitives": "https://motion-primitives.com/c/{name}.json",
-    "@efferd": "https://efferd.com/r/{name}.json",
-    "@aceternity": "https://ui.aceternity.com/registry/{name}.json"
+    "@animate-ui": "https://animate-ui.com/r/{name}.json"
   }
 }
