@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -38,7 +39,9 @@ export default function RootLayout({
       >
         <ClerkProvider>
           <ConvexClientProvider>
-            {children}
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
             <Toaster 
               position="top-center" 
               toastOptions={{

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Instagram } from './ui/svgs/instagram'
 import { XTwitter } from './ui/svgs/x-twitter'
 import { Email } from './ui/svgs/email'

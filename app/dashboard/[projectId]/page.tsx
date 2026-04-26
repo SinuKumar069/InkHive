@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -9,30 +10,37 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Loader2,
   Check,
   AlertCircle,
-  Cpu,
   FileText,
   Share2,
   Mail,
   Globe,
   Sparkles,
   Box,
+  ArrowLeft,
 } from "lucide-react";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-} from "@/components/ui/tabs";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { Show, UserButton } from "@clerk/nextjs";
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import { BlogPostEditor } from "@/components/blocks/blog-post-editor";
 import { SocialPostsEditor } from "@/components/blocks/socal-post-editor";
 import { EmailEditor } from "@/components/blocks/email-editor";
 import { SeoEditor } from "@/components/blocks/seo-editor";
-import Link from "next/link";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function DashboardPage() {
   const params = useParams();
@@ -40,155 +48,118 @@ export default function DashboardPage() {
   const projectId = params.projectId as Id<"contentProjects">;
 
   const project = useQuery(api.contentProjects.getProject, { projectId });
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("blog");
 
-  const tabLinks = [
-    {
-      label: "Blog Post",
-      value: "blog",
-      icon: <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />,
-    },
-    {
-      label: "Social Media",
-      value: "social",
-      icon: <Share2 className="h-4 w-4 shrink-0 text-muted-foreground" />,
-    },
-    {
-      label: "Email",
-      value: "email",
-      icon: <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />,
-    },
-    {
-      label: "SEO",
-      value: "seo",
-      icon: <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />,
-    },
-  ];
-
-  // Redirect if project not found
   useEffect(() => {
     if (project === null) {
       toast.error("Project not found");
-      router.push("/");
+      router.push("/dashboard");
     }
   }, [project, router]);
 
-  if (!project) {
+  if (project === undefined || project === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  // Calculate progress
   const jobs = project.jobStatus || {};
   const totalJobs = 4;
-  const completedJobs = Object.values(jobs).filter(
-    (s) => s === "completed",
-  ).length;
+  const completedJobs = Object.values(jobs).filter((status) => status === "completed").length;
   const progress = Math.round((completedJobs / totalJobs) * 100);
 
+  const tabLinks = [
+    {
+      label: "Blog Post",
+      value: "blog",
+      icon: <FileText className="h-4 w-4 shrink-0" />,
+    },
+    {
+      label: "Social Media",
+      value: "social",
+      icon: <Share2 className="h-4 w-4 shrink-0" />,
+    },
+    {
+      label: "Email",
+      value: "email",
+      icon: <Mail className="h-4 w-4 shrink-0" />,
+    },
+    {
+      label: "SEO",
+      value: "seo",
+      icon: <Globe className="h-4 w-4 shrink-0" />,
+    },
+  ];
+
   return (
-    <div className="h-screen w-full overflow-hidden bg-background text-foreground flex flex-col md:grid md:grid-cols-[auto_minmax(0,1fr)]">
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
-        <SidebarBody className="md:sticky md:top-0 md:h-screen md:overflow-hidden justify-between border-r border-white/10 bg-background/50 backdrop-blur-xl">
-          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            <div className={`flex items-center gap-3 py-3 ${sidebarOpen ? "px-1.5" : "justify-center px-0"}`}>
-              <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
-                <Cpu className="w-4 h-4 text-primary" />
-              </div>
-              {sidebarOpen && (
-                <Link href="/dashboard" className="flex flex-col gap-1">
-                  <p className="text-sm font-semibold tracking-tight text-foreground">InkHive</p>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Workspace</p>
-                </Link>
-              )}
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/50 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex w-full items-center justify-between gap-2 px-4">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-[orientation=vertical]:h-4"
+              />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>
+                      {project.blogPost?.title || "Content Project"}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
             </div>
-
-            <div className="mt-6 flex flex-col gap-1">
-              {tabLinks.map((item) => (
-                <SidebarLink
-                  key={item.value}
-                  link={{ label: item.label, href: `#${item.value}`, icon: item.icon }}
-                  className={`rounded-xl border text-sm transition-all ${activeTab === item.value
-                    ? "border-white/15 bg-white/5 text-foreground shadow-sm"
-                    : "border-transparent text-muted-foreground hover:border-white/10 hover:bg-white/5 hover:text-foreground"
-                    }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setActiveTab(item.value);
-                  }}
-                />
-              ))}
-            </div>
+            <StatusBadge status={project.status} />
           </div>
+        </header>
 
-          <div className={`space-y-2 pb-4 ${sidebarOpen ? "px-1" : "px-0"}`}>
-            <SidebarLink
-              link={{
-                label: "Back Home",
-                href: "/dashboard",
-                icon: <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground" />,
-              }}
-              className="rounded-xl border border-transparent text-muted-foreground transition-all hover:border-white/10 hover:bg-white/5 hover:text-foreground"
-            />
-            <Show when="signed-in">
-              <div className={`py-2 ${sidebarOpen ? "px-3" : "flex justify-center px-0"}`}>
-                <UserButton />
-              </div>
-            </Show>
-          </div>
-        </SidebarBody>
-      </Sidebar>
-
-      <div className="min-w-0 flex-1 relative overflow-y-auto overflow-x-hidden">
-        {/* Background Gradients */}
-        <div aria-hidden className="absolute inset-0 z-0 pointer-events-none opacity-40 mix-blend-screen hidden lg:block">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4" />
-        </div>
-
-        {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-sm">
-                  <Box className="w-5 h-5 text-foreground" />
+        <main className="flex flex-1 flex-col gap-6 p-4 pt-4 md:p-6">
+          <section className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                  <Box className="h-5 w-5 text-foreground" />
                 </div>
-                <div>
-                  <h1 className="text-xl font-semibold tracking-tight text-foreground line-clamp-1">
+                <div className="min-w-0">
+                  <h1 className="line-clamp-1 text-base font-semibold tracking-tight text-foreground md:text-lg">
                     {project.blogPost?.title || "AI Content Task"}
                   </h1>
-                  <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                    {project.inputType === "topic"
-                      ? "Seed: "
-                      : "Source: "}
-                    {project.inputType === "topic" ? project.inputContent : "Article Repurposing"}
+                  <p className="line-clamp-1 text-xs text-muted-foreground md:text-sm">
+                    {project.inputType === "topic" ? "Seed" : "Source article"}: {project.inputContent}
                   </p>
                 </div>
               </div>
-
-              <StatusBadge status={project.status} />
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to dashboard
+              </Link>
             </div>
 
             {project.status === "generating" && (
-              <div className="mt-6 bg-white/5 border border-white/10 rounded-xl p-4 shadow-sm backdrop-blur-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+              <div className="mt-4 rounded-lg border border-white/10 bg-background/40 p-4">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Sparkles className="h-4 w-4 animate-pulse text-primary" />
                     Agents processing... {progress}%
                   </span>
-                  <span className="text-xs text-muted-foreground bg-background/50 px-2 py-1 rounded-md border border-white/5">
+                  <span className="text-xs text-muted-foreground">
                     {completedJobs} / {totalJobs} complete
                   </span>
                 </div>
-                <Progress
-                  value={progress}
-                  aria-label="Agent processing progress"
-                  className="h-1.5 bg-white/10"
-                />
+                <Progress value={progress} aria-label="Agent processing progress" className="h-1.5" />
                 <div className="mt-4 flex flex-wrap gap-2">
                   {Object.entries(jobs).map(([name, status]) => (
                     <JobStatusBadge key={name} name={name} status={status} />
@@ -196,37 +167,43 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
-          </div>
-        </header>
+          </section>
 
-        {/* Main Content */}
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsContent value="blog" className="mt-0 outline-none">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
+            <TabsList className="h-auto flex-wrap p-1 w-full md:w-auto ">
+              {tabLinks.map((item) => (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  className="inline-flex items-center gap-2 md:px-3 px-1  data-[state=active]:bg-background data-[state=active]:shadow-sm  data-[state=active]:border data-[state=active]:border-white/10 rounded-lg py-2.5 transition-all"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            <TabsContent value="blog" className="mt-0">
               <BlogPostEditor project={project} />
             </TabsContent>
-
-            <TabsContent value="social" className="mt-0 outline-none">
+            <TabsContent value="social" className="mt-0">
               <SocialPostsEditor project={project} />
             </TabsContent>
-
-            <TabsContent value="email" className="mt-0 outline-none">
+            <TabsContent value="email" className="mt-0">
               <EmailEditor project={project} />
             </TabsContent>
-
-            <TabsContent value="seo" className="mt-0 outline-none">
+            <TabsContent value="seo" className="mt-0">
               <SeoEditor project={project} />
             </TabsContent>
           </Tabs>
         </main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
-// Helper Components
 function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+  const config: Record<string, { bg: string; text: string; icon: ReactNode }> = {
     draft: {
       bg: "bg-white/5 border-white/10",
       text: "text-muted-foreground",
@@ -252,10 +229,10 @@ function StatusBadge({ status }: { status: string }) {
   const { bg, text, icon } = config[status] || config.draft;
 
   return (
-    <Badge variant="outline" className={`${bg} ${text} font-medium px-3 py-1 shadow-sm`}>
+    <Badge variant="outline" className={`${bg} ${text} px-3 py-1 font-medium shadow-sm`}>
       <span className="flex items-center gap-1.5">
         {icon}
-        <span className="capitalize tracking-wide text-xs">{status}</span>
+        <span className="text-xs capitalize tracking-wide">{status}</span>
       </span>
     </Badge>
   );
@@ -288,9 +265,11 @@ function JobStatusBadge({ name, status }: { name: string; status?: string }) {
   const { icon, bg, text } = config[status || "pending"];
 
   return (
-    <div className={`flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md ${bg} ${text} shadow-sm backdrop-blur-sm`}>
+    <div
+      className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs shadow-sm backdrop-blur-sm ${bg} ${text}`}
+    >
       {icon}
-      <span className="capitalize font-medium tracking-wide">
+      <span className="capitalize tracking-wide">
         {name.replace(/([A-Z])/g, " $1").trim()}
       </span>
     </div>

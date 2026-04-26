@@ -13,6 +13,16 @@ import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { getAuthUserId } from "./auth";
 
+function normalizeSlug(input: string) {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 /**
  * Create a new content project
  * Requires authentication - called from UI
@@ -441,15 +451,20 @@ export const saveSeoMetadata = mutation({
     if (!project) {
       throw new Error("Project not found");
     }
+    const normalizedSlug = normalizeSlug(args.slug);
+    if (!normalizedSlug) {
+      throw new Error("Invalid slug");
+    }
 
     await ctx.db.patch(args.projectId, {
       seoMetadata: {
         title: args.title,
         description: args.description,
         keywords: args.keywords,
-        slug: args.slug,
+        slug: normalizedSlug,
         isEdited: false,
       },
+      publicSlug: normalizedSlug,
       updatedAt: Date.now(),
     });
   },
@@ -482,17 +497,64 @@ export const updateSeoMetadata = mutation({
     if (!currentSeo) {
       throw new Error("SEO metadata not found");
     }
+    const normalizedSlug = normalizeSlug(args.slug);
+    if (!normalizedSlug) {
+      throw new Error("Invalid slug");
+    }
 
     await ctx.db.patch(args.projectId, {
       seoMetadata: {
         title: args.title,
         description: args.description,
         keywords: args.keywords,
-        slug: args.slug,
+        slug: normalizedSlug,
         isEdited: true,
       },
+      publicSlug: normalizedSlug,
       updatedAt: Date.now(),
     });
+  },
+});
+
+/**
+ * Get a public blog post by slug
+ * Public route data only, no private project fields
+ */
+export const getPublicPostBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const normalizedSlug = normalizeSlug(args.slug);
+    if (!normalizedSlug) {
+      return null;
+    }
+
+    const projects = await ctx.db
+      .query("contentProjects")
+      .withIndex("by_public_slug_and_status", (q) =>
+        q.eq("publicSlug", normalizedSlug).eq("status", "completed"),
+      )
+      .order("desc")
+      .take(5);
+
+    const project = projects.find((item) => item.blogPost && item.seoMetadata);
+    if (!project || !project.blogPost || !project.seoMetadata) {
+      return null;
+    }
+
+    return {
+      title: project.blogPost.title,
+      content: project.blogPost.content,
+      excerpt: project.blogPost.excerpt,
+      readingTime: project.blogPost.readingTime,
+      slug: project.seoMetadata.slug,
+      seoTitle: project.seoMetadata.title,
+      seoDescription: project.seoMetadata.description,
+      seoKeywords: project.seoMetadata.keywords,
+      publishedAt: project.completedAt ?? project.updatedAt,
+      updatedAt: project.updatedAt,
+    };
   },
 });
 

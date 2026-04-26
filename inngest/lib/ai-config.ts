@@ -21,19 +21,10 @@ export const AI_CONFIG = {
     temperature: 0.7,
   },
   openrouter: {
-    model: process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-sonnet",
+    model: process.env.OPENROUTER_MODEL || "x-ai/grok-4.1-fast:free",
     maxTokens: 4000,
     temperature: 0.7,
     // OpenRouter base URL
     baseUrl: "https://openrouter.ai/api/v1",
   },
 };
-
-// Helper to check which provider is active
-export function isGemini(): boolean {
-  return AI_PROVIDER === "gemini";
-}
-
-export function isOpenRouter(): boolean {
-  return AI_PROVIDER === "openrouter";
-}

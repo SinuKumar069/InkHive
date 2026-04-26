@@ -1,12 +1,12 @@
 import { Doc } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Edit3, Save, X, FileText, Loader2, Share2, Check, AlertCircle, Copy } from "lucide-react";
+import { Edit3, Save, FileText, Loader2, Share2, Check, AlertCircle, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 type ContentProject = Doc<"contentProjects">;

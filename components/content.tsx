@@ -2,22 +2,10 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Logo } from "./logo";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { formatDate, truncateText } from "@/lib/utils";
-import {
-  Plus,
-  Loader2,
-  FileText,
-  Share2,
-  Mail,
-  Globe,
-  ArrowRight,
-  Sparkles,
-  Cpu,
-  Box,
-} from "lucide-react";
+import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Cpu, Box } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 

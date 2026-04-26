@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 import { Textarea } from "@/components/ui/textarea";
-import { Edit3, Save, X, Loader2, Check, Mail, Globe } from "lucide-react";
+import { Edit3, Save, X, Loader2, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";

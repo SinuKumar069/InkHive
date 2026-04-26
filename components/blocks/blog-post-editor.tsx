@@ -1,5 +1,5 @@
 import { Doc } from "@/convex/_generated/dataModel";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Edit3, Save, X, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { MarkdownRenderer } from "@/components/markdown-renderer";
 
 type ContentProject = Doc<"contentProjects">;
 
@@ -168,16 +169,14 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
                     </div>
                 </div>
             ) : (
-                <div className="prose prose-zinc dark:prose-invert max-w-none prose-headings:font-medium prose-headings:tracking-tight prose-p:leading-relaxed prose-a:text-primary">
-                    <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-foreground mb-4 sm:mb-6 break-words">
+                <div className="mx-auto w-full max-w-4xl">
+                    <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-foreground mb-4 sm:mb-6 break-words">
                         {blogPost.title}
                     </h1>
-                    <p className="text-base sm:text-xl text-muted-foreground mb-6 sm:mb-10 italic border-l-4 border-primary/50 pl-4 sm:pl-6 py-2 bg-primary/5 rounded-r-xl break-words">
+                    <p className="text-base sm:text-xl text-muted-foreground mb-8 sm:mb-12 italic border-l-4 border-primary/50 pl-4 sm:pl-6 py-3 bg-primary/5 rounded-r-xl break-words leading-relaxed">
                         {blogPost.excerpt}
                     </p>
-                    <div className="whitespace-pre-wrap text-foreground/90 leading-relaxed sm:leading-loose text-base sm:text-lg break-words">
-                        {blogPost.content}
-                    </div>
+                    <MarkdownRenderer content={blogPost.content} className="break-words" />
                 </div>
             )}
         </div>

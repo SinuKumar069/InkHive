@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Sparkles, FileText, Lightbulb, Box, Cpu } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles, FileText, Lightbulb, Cpu } from "lucide-react";
 import Link from "next/link";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 

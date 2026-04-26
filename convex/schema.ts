@@ -152,6 +152,7 @@ export default defineSchema({
         isEdited: v.boolean(),
       }),
     ),
+    publicSlug: v.optional(v.string()),
 
     // Publishing tracking
     publishedTo: v.optional(v.array(v.string())), // ["twitter", "linkedin", "medium"]
@@ -165,5 +166,7 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_status", ["status"])
     .index("by_user_and_status", ["userId", "status"])
+    .index("by_public_slug", ["publicSlug"])
+    .index("by_public_slug_and_status", ["publicSlug", "status"])
     .index("by_created_at", ["createdAt"]),
 }); 
