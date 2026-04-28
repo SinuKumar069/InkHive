@@ -5,6 +5,10 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { BorderBeam } from '@/components/ui/border-beam'
+import { StartTopicCard } from './start-topic-card'
+import { GenerateAssetsCard } from './generate-assets-card'
+import { ReviewCustomizeCard } from './review-customize-card'
+
 
 export default function HowitWorks() {
     type ImageKey = 'item-1' | 'item-2' | 'item-3' | 'item-4'
@@ -119,13 +123,21 @@ export default function HowitWorks() {
                                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
                                     transition={{ duration: 0.2 }}
                                     className="size-full overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-md">
-                                    <Image
-                                        src={images[activeItem].image}
+                                    {activeItem === 'item-1' ? (
+                                        <StartTopicCard />
+                                    ) : activeItem === 'item-2' ? (
+                                        <GenerateAssetsCard />
+                                    ) : activeItem === 'item-3' ? (
+                                        <ReviewCustomizeCard />
+                                    ) : (
+                                        <Image
+                                            src={images[activeItem].image}
                                             className="size-full object-cover object-top-left dark:mix-blend-lighten"
-                                        alt={images[activeItem].alt}
-                                        width={1207}
-                                        height={929}
-                                    />
+                                            alt={images[activeItem].alt}
+                                            width={1207}
+                                            height={929}
+                                        />
+                                    )}
                                 </motion.div>
                             </AnimatePresence>
                         </div>
