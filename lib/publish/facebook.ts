@@ -1,40 +1,41 @@
-/**
- * Facebook Publishing
- *
- * Publishes posts via Facebook Graph API
- * Requires OAuth 2.0 authentication and page permissions
- */
-
 interface FacebookContent {
   text: string;
   imageUrl?: string;
 }
 
-/**
- * Publish to Facebook
- * Note: This is a placeholder - requires Facebook API setup
- */
+interface FacebookCredentials {
+  accessToken: string;
+  metadata?: Record<string, string>;
+  accountId?: string;
+}
+
 export async function publishToFacebook(
   content: FacebookContent,
+  credentials: FacebookCredentials,
 ): Promise<void> {
-  console.log("Publishing to Facebook:", content.text.substring(0, 50) + "...");
+  const pageId =
+    credentials.metadata?.pageId ||
+    credentials.accountId;
 
-  // TODO: Implement Facebook Graph API integration
-  // 1. Set up Facebook Developer account
-  // 2. Create app and get App ID/Secret
-  // 3. Get page access token
-  // 4. Use Graph API to post to page/profile
+  if (!pageId) {
+    throw new Error("Facebook page ID missing in connected account metadata");
+  }
 
-  console.log("Facebook publishing not yet implemented");
-  console.log("To implement:");
-  console.log(
-    "1. Set up Facebook Developer account at https://developers.facebook.com",
-  );
-  console.log("2. Create an app and get App ID/Secret");
-  console.log("3. Get page access token");
-  console.log("4. Use Graph API to post content");
+  const endpoint = new URL(`https://graph.facebook.com/v22.0/${pageId}/feed`);
+  endpoint.searchParams.set("message", content.text);
 
-  throw new Error(
-    "Facebook publishing not yet implemented. Please configure Facebook API credentials.",
-  );
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${credentials.accessToken}`,
+    },
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = (payload as { error?: { message?: string } }).error;
+    throw new Error(
+      `Facebook publish failed: ${error?.message || response.statusText}`,
+    );
+  }
 }

@@ -88,14 +88,14 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
                     </div>
                     <div>
                         <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-foreground">Blog Post</h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 flex items-center gap-2">
+                        <div className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 flex items-center gap-2">
                             {blogPost.readingTime} min read
                             {blogPost.isEdited && (
                                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-2 py-0.5 text-[10px] sm:text-xs">
                                     Edited
                                 </Badge>
                             )}
-                        </p>
+                        </div>
                     </div>
                 </div>
 

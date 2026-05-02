@@ -8,6 +8,7 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -41,6 +42,13 @@ import { SocialPostsEditor } from "@/components/blocks/socal-post-editor";
 import { EmailEditor } from "@/components/blocks/email-editor";
 import { SeoEditor } from "@/components/blocks/seo-editor";
 import { AppSidebar } from "@/components/app-sidebar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function DashboardPage() {
   const params = useParams();
@@ -48,7 +56,25 @@ export default function DashboardPage() {
   const projectId = params.projectId as Id<"contentProjects">;
 
   const project = useQuery(api.contentProjects.getProject, { projectId });
+  const projectWithResearch = project as
+    | (typeof project & {
+        generationMode?: "grounded" | "classic";
+        research?: {
+          status?: "pending" | "running" | "completed" | "failed" | "skipped";
+          errorCode?: string;
+          researchedAt?: number;
+          sources: Array<{
+            title: string;
+            url: string;
+            domain: string;
+          }>;
+        };
+      })
+    | null
+    | undefined;
   const [activeTab, setActiveTab] = useState("blog");
+  const [isFallbackGenerating, setIsFallbackGenerating] = useState(false);
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false);
 
   useEffect(() => {
     if (project === null) {
@@ -56,6 +82,16 @@ export default function DashboardPage() {
       router.push("/dashboard");
     }
   }, [project, router]);
+
+  useEffect(() => {
+    if (
+      project &&
+      projectWithResearch?.research?.errorCode === "DAILY_QUOTA_EXCEEDED" &&
+      projectWithResearch?.generationMode !== "classic"
+    ) {
+      setShowQuotaDialog(true);
+    }
+  }, [project, projectWithResearch]);
 
   if (project === undefined || project === null) {
     return (
@@ -66,9 +102,33 @@ export default function DashboardPage() {
   }
 
   const jobs = project.jobStatus || {};
-  const totalJobs = 4;
+  const totalJobs = Object.keys(jobs).length || 5;
   const completedJobs = Object.values(jobs).filter((status) => status === "completed").length;
   const progress = Math.round((completedJobs / totalJobs) * 100);
+
+  const handleGenerateWithoutResearch = async () => {
+    setIsFallbackGenerating(true);
+    try {
+      await fetch("/api/trigger-inngest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId,
+          inputType: project.inputType,
+          inputContent: project.inputContent,
+          generationMode: "classic",
+          researchEnabled: false,
+        }),
+      });
+      toast.success("Generating content without web research...");
+      setShowQuotaDialog(false);
+    } catch (error) {
+      console.error("Fallback generation error:", error);
+      toast.error("Failed to start classic generation");
+    } finally {
+      setIsFallbackGenerating(false);
+    }
+  };
 
   const tabLinks = [
     {
@@ -95,6 +155,24 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
+      <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Daily research quota reached</DialogTitle>
+            <DialogDescription>
+              You have hit Gemini daily web research quota. You can try later or continue with classic generation.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowQuotaDialog(false)}>
+              Try later
+            </Button>
+            <Button onClick={handleGenerateWithoutResearch} disabled={isFallbackGenerating}>
+              {isFallbackGenerating ? "Starting..." : "Generate without web research"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/50 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -137,6 +215,16 @@ export default function DashboardPage() {
                     <h1 className="truncate text-lg font-bold tracking-tight text-foreground md:text-xl">
                       {project.blogPost?.title || "AI Content Task"}
                     </h1>
+                    {projectWithResearch?.generationMode === "classic" && (
+                      <Badge variant="outline" className="border-amber-400/40 bg-amber-500/10 text-amber-300">
+                        Classic mode (no live research)
+                      </Badge>
+                    )}
+                    {projectWithResearch?.generationMode === "grounded" && projectWithResearch?.research?.status === "completed" && (
+                      <Badge variant="outline" className="border-emerald-400/40 bg-emerald-500/10 text-emerald-300">
+                        Realtime grounded
+                      </Badge>
+                    )}
                     <Badge variant="outline" className="hidden h-4 border-white/10 bg-white/5 px-1.5 py-0 text-[10px] uppercase tracking-wider text-muted-foreground md:flex">
                       {project.inputType}
                     </Badge>
@@ -179,6 +267,32 @@ export default function DashboardPage() {
                 </div>
               )}
           </section>
+
+          {/* {projectWithResearch?.research?.status === "completed" && (
+            <section className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-foreground">Research Sources</h2>
+                <span className="text-xs text-muted-foreground">
+                  {projectWithResearch.research?.researchedAt
+                    ? new Date(projectWithResearch.research.researchedAt).toLocaleString()
+                    : "No timestamp"}
+                </span>
+              </div>
+              <div className="space-y-1">
+                {projectWithResearch.research?.sources.map((source, index) => (
+                  <a
+                    key={`${source.url}-${index}`}
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block text-sm text-primary hover:underline"
+                  >
+                    {source.title} ({source.domain})
+                  </a>
+                ))}
+              </div>
+            </section>
+          )} */}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
             <TabsList className="h-auto flex-wrap p-1 w-full md:w-auto ">
@@ -273,7 +387,7 @@ function JobStatusBadge({ name, status }: { name: string; status?: string }) {
     },
   };
 
-  const { icon, bg, text } = config[status || "pending"];
+  const { icon, bg, text } = config[status || "pending"] ?? config.pending;
 
   return (
     <div

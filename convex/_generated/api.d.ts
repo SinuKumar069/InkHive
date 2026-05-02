@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as connectedAccounts from "../connectedAccounts.js";
 import type * as contentProjects from "../contentProjects.js";
 
 import type {
@@ -19,6 +20,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  connectedAccounts: typeof connectedAccounts;
   contentProjects: typeof contentProjects;
 }>;
 
