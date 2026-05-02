@@ -34,15 +34,6 @@ import { ConvexHttpClient } from "convex/browser";
 
 // Initialize Convex client for Inngest functions
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-const contentProjectsApi = (
-  api as unknown as {
-    contentProjects: {
-      setGenerationMode: never;
-      updateResearchStatus: never;
-      saveResearch: never;
-    };
-  }
-).contentProjects;
 
 export const contentPipeline = inngest.createFunction(
   {
@@ -69,7 +60,7 @@ export const contentPipeline = inngest.createFunction(
           projectId,
           status: "generating",
         });
-        await convex.mutation(contentProjectsApi.setGenerationMode, {
+        await convex.mutation(api.contentProjects.setGenerationMode, {
           projectId,
           generationMode,
         });
@@ -80,14 +71,14 @@ export const contentPipeline = inngest.createFunction(
 
       if (shouldRunResearch) {
         const researchResult = await step.run("research-and-grounding", async () => {
-          await convex.mutation(contentProjectsApi.updateResearchStatus, {
+          await convex.mutation(api.contentProjects.updateResearchStatus, {
             projectId,
             status: "running",
           });
 
           try {
             const pack = await generateGroundedResearch(inputType, inputContent);
-            await convex.mutation(contentProjectsApi.saveResearch, {
+            await convex.mutation(api.contentProjects.saveResearch, {
               projectId,
               keyFindings: pack.keyFindings,
               trendingAngles: pack.trendingAngles,
@@ -96,7 +87,7 @@ export const contentPipeline = inngest.createFunction(
             return { ok: true as const, pack };
           } catch (error) {
             if (isQuotaError(error)) {
-              await convex.mutation(contentProjectsApi.updateResearchStatus, {
+              await convex.mutation(api.contentProjects.updateResearchStatus, {
                 projectId,
                 status: "failed",
                 errorCode: "DAILY_QUOTA_EXCEEDED",
@@ -124,7 +115,7 @@ export const contentPipeline = inngest.createFunction(
         research = researchResult.pack;
       } else {
         await step.run("mark-research-skipped", async () => {
-          await convex.mutation(contentProjectsApi.updateResearchStatus, {
+          await convex.mutation(api.contentProjects.updateResearchStatus, {
             projectId,
             status: "skipped",
           });
