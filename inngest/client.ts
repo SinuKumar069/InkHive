@@ -25,6 +25,8 @@ export type ContentPipelineEvent = {
     projectId: string;
     inputType: "topic" | "article";
     inputContent: string;
+    generationMode?: "grounded" | "classic";
+    researchEnabled?: boolean;
   };
 };
 
@@ -33,6 +35,7 @@ export type PublishContentEvent = {
   data: {
     projectId: string;
     platforms: string[];
-    userEmail: string;
+    userId: string;
+    userEmail?: string;
   };
 };

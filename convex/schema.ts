@@ -29,6 +29,15 @@ export default defineSchema({
     // Granular job status tracking
     jobStatus: v.optional(
       v.object({
+        research: v.optional(
+          v.union(
+            v.literal("pending"),
+            v.literal("running"),
+            v.literal("completed"),
+            v.literal("failed"),
+            v.literal("skipped"),
+          ),
+        ),
         blogPost: v.optional(
           v.union(
             v.literal("pending"),
@@ -60,6 +69,36 @@ export default defineSchema({
             v.literal("completed"),
             v.literal("failed"),
           ),
+        ),
+      }),
+    ),
+
+    generationMode: v.optional(
+      v.union(v.literal("grounded"), v.literal("classic")),
+    ),
+
+    research: v.optional(
+      v.object({
+        status: v.union(
+          v.literal("pending"),
+          v.literal("running"),
+          v.literal("completed"),
+          v.literal("failed"),
+          v.literal("skipped"),
+        ),
+        errorCode: v.optional(v.string()),
+        errorMessage: v.optional(v.string()),
+        attemptedAt: v.optional(v.number()),
+        researchedAt: v.optional(v.number()),
+        keyFindings: v.array(v.string()),
+        trendingAngles: v.array(v.string()),
+        sources: v.array(
+          v.object({
+            title: v.string(),
+            url: v.string(),
+            domain: v.string(),
+            publishedAt: v.optional(v.string()),
+          }),
         ),
       }),
     ),
@@ -169,4 +208,33 @@ export default defineSchema({
     .index("by_public_slug", ["publicSlug"])
     .index("by_public_slug_and_status", ["publicSlug", "status"])
     .index("by_created_at", ["createdAt"]),
+
+  connectedAccounts: defineTable({
+    userId: v.string(),
+    platform: v.union(
+      v.literal("twitter"),
+      v.literal("linkedin"),
+      v.literal("facebook"),
+      v.literal("instagram"),
+    ),
+    status: v.union(
+      v.literal("connected"),
+      v.literal("expired"),
+      v.literal("error"),
+      v.literal("disconnected"),
+    ),
+    accountName: v.optional(v.string()),
+    accountId: v.optional(v.string()),
+    encryptedAccessToken: v.optional(v.string()),
+    encryptedRefreshToken: v.optional(v.string()),
+    tokenExpiresAt: v.optional(v.number()),
+    scopes: v.array(v.string()),
+    metadata: v.optional(v.string()),
+    lastError: v.optional(v.string()),
+    lastSyncedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_platform", ["userId", "platform"]),
 }); 

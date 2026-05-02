@@ -45,7 +45,9 @@ export const createProject = mutation({
       inputType: args.inputType,
       inputContent: args.inputContent,
       status: "draft",
+      generationMode: "grounded",
       jobStatus: {
+        research: "pending",
         blogPost: "pending",
         socialPosts: "pending",
         emailNewsletter: "pending",
@@ -156,6 +158,7 @@ export const updateJobStatus = mutation({
   args: {
     projectId: v.id("contentProjects"),
     jobName: v.union(
+      v.literal("research"),
       v.literal("blogPost"),
       v.literal("socialPosts"),
       v.literal("emailNewsletter"),
@@ -166,6 +169,7 @@ export const updateJobStatus = mutation({
       v.literal("running"),
       v.literal("completed"),
       v.literal("failed"),
+      v.literal("skipped"),
     ),
   },
   handler: async (ctx, args) => {
@@ -181,6 +185,111 @@ export const updateJobStatus = mutation({
         [args.jobName]: args.status,
       },
       updatedAt: Date.now(),
+    });
+  },
+});
+
+export const setGenerationMode = mutation({
+  args: {
+    projectId: v.id("contentProjects"),
+    generationMode: v.union(v.literal("grounded"), v.literal("classic")),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    await ctx.db.patch(args.projectId, {
+      generationMode: args.generationMode,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const updateResearchStatus = mutation({
+  args: {
+    projectId: v.id("contentProjects"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("running"),
+      v.literal("completed"),
+      v.literal("failed"),
+      v.literal("skipped"),
+    ),
+    errorCode: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const now = Date.now();
+    const currentJobStatus = project.jobStatus || {};
+    const existingResearch = project.research;
+
+    await ctx.db.patch(args.projectId, {
+      jobStatus: {
+        ...currentJobStatus,
+        research: args.status,
+      },
+      research: {
+        status: args.status,
+        attemptedAt: now,
+        researchedAt:
+          args.status === "completed"
+            ? now
+            : existingResearch?.researchedAt,
+        errorCode: args.errorCode,
+        errorMessage: args.errorMessage,
+        keyFindings: existingResearch?.keyFindings || [],
+        trendingAngles: existingResearch?.trendingAngles || [],
+        sources: existingResearch?.sources || [],
+      },
+      updatedAt: now,
+    });
+  },
+});
+
+export const saveResearch = mutation({
+  args: {
+    projectId: v.id("contentProjects"),
+    keyFindings: v.array(v.string()),
+    trendingAngles: v.array(v.string()),
+    sources: v.array(
+      v.object({
+        title: v.string(),
+        url: v.string(),
+        domain: v.string(),
+        publishedAt: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) {
+      throw new Error("Project not found");
+    }
+
+    const now = Date.now();
+    const currentJobStatus = project.jobStatus || {};
+
+    await ctx.db.patch(args.projectId, {
+      jobStatus: {
+        ...currentJobStatus,
+        research: "completed",
+      },
+      research: {
+        status: "completed",
+        attemptedAt: now,
+        researchedAt: now,
+        keyFindings: args.keyFindings,
+        trendingAngles: args.trendingAngles,
+        sources: args.sources,
+      },
+      updatedAt: now,
     });
   },
 });

@@ -21,12 +21,44 @@ import { getGeminiProvider } from "./gemini-provider";
 import { getOpenRouterProvider } from "./openrouter-provider";
 import { AI_PROVIDER } from "./ai-config";
 
+class ResilientAIProvider implements AIProvider {
+  constructor(
+    private primary: AIProvider,
+    private fallback: AIProvider,
+  ) {}
+
+  async generateContent(systemPrompt: string, userPrompt: string): Promise<string> {
+    try {
+      return await this.primary.generateContent(systemPrompt, userPrompt);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+      const shouldFallback =
+        message.includes("http 500") ||
+        message.includes("internal server error") ||
+        message.includes("http 502") ||
+        message.includes("http 503") ||
+        message.includes("http 504");
+
+      if (!shouldFallback) {
+        throw error;
+      }
+
+      console.warn("[AI-CLIENT] Primary provider failed; retrying with fallback provider");
+      return await this.fallback.generateContent(systemPrompt, userPrompt);
+    }
+  }
+}
+
 /**
  * Factory function - returns the configured AI provider (sync)
  */
 export function getAIProvider(): AIProvider {
   if (AI_PROVIDER === "openrouter") {
-    return getOpenRouterProvider();
+    return new ResilientAIProvider(
+      getOpenRouterProvider(),
+      getGeminiProvider(),
+    );
   }
   // Default to Gemini
   return getGeminiProvider();

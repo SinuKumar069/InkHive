@@ -10,6 +10,7 @@
 import type { step as InngestStep } from "inngest";
 import { z } from "zod";
 import { getAIProvider, calculateReadingTime } from "../../lib/ai-client";
+import type { ResearchPack } from "../../lib/research-provider";
 
 // Zod schema for structured output
 const blogPostSchema = z.object({
@@ -48,9 +49,14 @@ Writing Guidelines:
 function buildBlogPostPrompt(
   inputType: "topic" | "article",
   inputContent: string,
+  research?: ResearchPack,
 ): string {
+  const researchSection = research
+    ? `\nREALTIME RESEARCH CONTEXT:\nKey Findings:\n${research.keyFindings.map((v) => `- ${v}`).join("\n")}\n\nTrending Angles:\n${research.trendingAngles.map((v) => `- ${v}`).join("\n")}\n\nSources:\n${research.sources.map((v) => `- ${v.title} (${v.domain}): ${v.url}`).join("\n")}\n`
+    : "";
+
   if (inputType === "topic") {
-    return `Write a comprehensive blog post about: "${inputContent}"
+    return `Write a comprehensive blog post about: "${inputContent}"${researchSection}
 
 Requirements:
 - 1000-1500 words
@@ -99,6 +105,7 @@ export async function generateBlogPost(
   _step: typeof InngestStep,
   inputType: "topic" | "article",
   inputContent: string,
+  research?: ResearchPack,
 ): Promise<{
   title: string;
   content: string;
@@ -114,7 +121,7 @@ export async function generateBlogPost(
     console.log("[BLOG-POST] Calling AI provider...");
     const response = await ai.generateContent(
       BLOG_SYSTEM_PROMPT,
-      buildBlogPostPrompt(inputType, inputContent),
+      buildBlogPostPrompt(inputType, inputContent, research),
     );
 
     console.log("[BLOG-POST] Raw response:", response.substring(0, 200));

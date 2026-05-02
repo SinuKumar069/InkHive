@@ -1,41 +1,76 @@
-/**
- * Instagram Publishing
- *
- * Publishes posts via Instagram Basic Display API or Instagram Graph API
- * Requires OAuth 2.0 authentication and business/creator account
- */
-
 interface InstagramContent {
   text: string;
   imageUrl?: string;
 }
 
-/**
- * Publish to Instagram
- * Note: This is a placeholder - requires Instagram API setup
- */
+interface InstagramCredentials {
+  accessToken: string;
+  metadata?: Record<string, string>;
+  accountId?: string;
+}
+
+type GraphResponse = {
+  id?: string;
+  error?: {
+    message?: string;
+  };
+};
+
 export async function publishToInstagram(
   content: InstagramContent,
+  credentials: InstagramCredentials,
 ): Promise<void> {
-  console.log(
-    "Publishing to Instagram:",
-    content.text.substring(0, 50) + "...",
+  const instagramAccountId =
+    credentials.metadata?.instagramAccountId || credentials.accountId;
+
+  if (!instagramAccountId) {
+    throw new Error(
+      "Instagram account ID missing in connected account metadata",
+    );
+  }
+
+  if (!content.imageUrl) {
+    throw new Error(
+      "Instagram publishing requires imageUrl. Add an image to the Instagram post before publishing.",
+    );
+  }
+
+  const createMediaEndpoint = new URL(
+    `https://graph.facebook.com/v22.0/${instagramAccountId}/media`,
   );
+  createMediaEndpoint.searchParams.set("image_url", content.imageUrl);
+  createMediaEndpoint.searchParams.set("caption", content.text);
 
-  // TODO: Implement Instagram API integration
-  // 1. Set up Instagram Business account
-  // 2. Connect to Facebook Developer
-  // 3. Use Instagram Graph API
-  // 4. OAuth flow for authentication
+  const mediaResponse = await fetch(createMediaEndpoint.toString(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${credentials.accessToken}`,
+    },
+  });
 
-  console.log("Instagram publishing not yet implemented");
-  console.log("To implement:");
-  console.log("1. Set up Instagram Business account");
-  console.log("2. Connect to Facebook Developer");
-  console.log("3. Get Instagram Graph API access");
-  console.log("4. Implement OAuth and posting flow");
+  const mediaPayload = (await mediaResponse.json().catch(() => ({}))) as GraphResponse;
+  if (!mediaResponse.ok || !mediaPayload.id) {
+    throw new Error(
+      `Instagram media creation failed: ${mediaPayload.error?.message || mediaResponse.statusText}`,
+    );
+  }
 
-  throw new Error(
-    "Instagram publishing not yet implemented. Please configure Instagram API credentials.",
+  const publishEndpoint = new URL(
+    `https://graph.facebook.com/v22.0/${instagramAccountId}/media_publish`,
   );
+  publishEndpoint.searchParams.set("creation_id", mediaPayload.id);
+
+  const publishResponse = await fetch(publishEndpoint.toString(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${credentials.accessToken}`,
+    },
+  });
+
+  const publishPayload = (await publishResponse.json().catch(() => ({}))) as GraphResponse;
+  if (!publishResponse.ok) {
+    throw new Error(
+      `Instagram publish failed: ${publishPayload.error?.message || publishResponse.statusText}`,
+    );
+  }
 }

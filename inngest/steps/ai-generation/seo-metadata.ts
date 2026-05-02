@@ -10,6 +10,7 @@
 import type { step as InngestStep } from "inngest";
 import { z } from "zod";
 import { getAIProvider } from "../../lib/ai-client";
+import type { ResearchPack } from "../../lib/research-provider";
 
 // Zod schema for structured output
 const seoMetadataSchema = z.object({
@@ -51,7 +52,12 @@ function buildSeoPrompt(
   blogTitle: string,
   blogContent: string,
   excerpt: string,
+  research?: ResearchPack,
 ): string {
+  const researchSection = research
+    ? `\nREALTIME RESEARCH CONTEXT:\nKey Findings:\n${research.keyFindings.map((v) => `- ${v}`).join("\n")}\n\nTrending Angles:\n${research.trendingAngles.map((v) => `- ${v}`).join("\n")}\n`
+    : "";
+
   return `Generate SEO metadata for this blog article.
 
 BLOG TITLE: ${blogTitle}
@@ -60,6 +66,7 @@ BLOG EXCERPT: ${excerpt}
 
 FULL CONTENT (first 1000 chars):
 ${blogContent.substring(0, 1000)}
+${researchSection}
 
 Generate SEO metadata:
 
@@ -105,6 +112,7 @@ export async function generateSeoMetadata(
   blogTitle: string,
   blogContent: string,
   excerpt: string,
+  research?: ResearchPack,
 ): Promise<{
   title: string;
   description: string;
@@ -118,7 +126,7 @@ export async function generateSeoMetadata(
     console.log("[SEO] Calling AI provider...");
     const response = await ai.generateContent(
       SEO_SYSTEM_PROMPT,
-      buildSeoPrompt(blogTitle, blogContent, excerpt),
+      buildSeoPrompt(blogTitle, blogContent, excerpt, research),
     );
     console.log("[SEO] Raw response:", response.substring(0, 200));
 

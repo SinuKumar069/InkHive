@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, TriangleAlert } from "lucide-react"
 import { useEffect, useState } from "react"
-import { CopyButton } from "./animate-ui/components/buttons/copy"
 
 interface DeleteResourceProps {
   open: boolean
@@ -66,10 +65,7 @@ export function DeleteResource({
             <Label htmlFor="confirmation" className="text-sm font-medium text-muted-foreground uppercase tracking-[0.1em] flex flex-wrap items-center gap-x-2 gap-y-2 leading-relaxed">
               <span className="shrink-0">To confirm, type</span>
               <span className="font-bold text-foreground break-all border-b border-foreground/20 pb-0.5 bg-white/5 px-2 rounded-sm">Delete Project</span>
-              <div className="flex items-center gap-2">
-                <CopyButton content="Delete Project"/>
-                <span className="shrink-0">below</span>
-              </div>
+              <span className="shrink-0">below</span>
             </Label>
             <Input
               id="confirmation"

@@ -24,11 +24,25 @@ import { generateBlogPost } from "../steps/ai-generation/blog-post";
 import { generateSocialPosts } from "../steps/ai-generation/social-posts";
 import { generateEmailNewsletter } from "../steps/ai-generation/email-newsletter";
 import { generateSeoMetadata } from "../steps/ai-generation/seo-metadata";
+import {
+  generateGroundedResearch,
+  isQuotaError,
+  type ResearchPack,
+} from "../lib/research-provider";
 import { api } from "@/convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
 
 // Initialize Convex client for Inngest functions
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const contentProjectsApi = (
+  api as unknown as {
+    contentProjects: {
+      setGenerationMode: never;
+      updateResearchStatus: never;
+      saveResearch: never;
+    };
+  }
+).contentProjects;
 
 export const contentPipeline = inngest.createFunction(
   {
@@ -38,7 +52,13 @@ export const contentPipeline = inngest.createFunction(
     triggers: [{ event: "content/generate" }],
   },
   async ({ event, step }) => {
-    const { projectId, inputType, inputContent } = event.data;
+    const {
+      projectId,
+      inputType,
+      inputContent,
+      generationMode = "grounded",
+      researchEnabled = true,
+    } = event.data;
 
   // console.log(`Starting content pipeline for project ${projectId}`);
 
@@ -49,7 +69,67 @@ export const contentPipeline = inngest.createFunction(
           projectId,
           status: "generating",
         });
+        await convex.mutation(contentProjectsApi.setGenerationMode, {
+          projectId,
+          generationMode,
+        });
       });
+
+      let research: ResearchPack | undefined;
+      const shouldRunResearch = generationMode === "grounded" && researchEnabled;
+
+      if (shouldRunResearch) {
+        const researchResult = await step.run("research-and-grounding", async () => {
+          await convex.mutation(contentProjectsApi.updateResearchStatus, {
+            projectId,
+            status: "running",
+          });
+
+          try {
+            const pack = await generateGroundedResearch(inputType, inputContent);
+            await convex.mutation(contentProjectsApi.saveResearch, {
+              projectId,
+              keyFindings: pack.keyFindings,
+              trendingAngles: pack.trendingAngles,
+              sources: pack.sources,
+            });
+            return { ok: true as const, pack };
+          } catch (error) {
+            if (isQuotaError(error)) {
+              await convex.mutation(contentProjectsApi.updateResearchStatus, {
+                projectId,
+                status: "failed",
+                errorCode: "DAILY_QUOTA_EXCEEDED",
+                errorMessage:
+                  "Daily Gemini research quota reached. Retry later or generate without web research.",
+              });
+          await convex.mutation(api.contentProjects.updateProjectStatus, {
+                projectId,
+                status: "draft",
+              });
+              return { ok: false as const, quotaExceeded: true as const };
+            }
+            throw error;
+          }
+        });
+
+        if (!researchResult.ok) {
+          return {
+            success: false,
+            projectId,
+            requiresFallback: true,
+            reason: "DAILY_QUOTA_EXCEEDED",
+          };
+        }
+        research = researchResult.pack;
+      } else {
+        await step.run("mark-research-skipped", async () => {
+          await convex.mutation(contentProjectsApi.updateResearchStatus, {
+            projectId,
+            status: "skipped",
+          });
+        });
+      }
 
       // Step 2: Agent 1 - Generate Blog Post
       const blogPost = await step.run("generate-blog-post", async () => {
@@ -59,7 +139,7 @@ export const contentPipeline = inngest.createFunction(
           status: "running",
         });
 
-        const result = await generateBlogPost(step, inputType, inputContent);
+        const result = await generateBlogPost(step, inputType, inputContent, research);
 
         await convex.mutation(api.contentProjects.saveBlogPost, {
           projectId,
@@ -92,6 +172,7 @@ export const contentPipeline = inngest.createFunction(
           blogPost.title,
           blogPost.content,
           blogPost.excerpt,
+          research,
         );
 
         await convex.mutation(api.contentProjects.saveSocialPosts, {
@@ -125,6 +206,7 @@ export const contentPipeline = inngest.createFunction(
           blogPost.title,
           blogPost.content,
           blogPost.excerpt,
+          research,
         );
 
         await convex.mutation(api.contentProjects.saveEmailNewsletter, {
@@ -157,6 +239,7 @@ export const contentPipeline = inngest.createFunction(
           blogPost.title,
           blogPost.content,
           blogPost.excerpt,
+          research,
         );
 
         await convex.mutation(api.contentProjects.saveSeoMetadata, {

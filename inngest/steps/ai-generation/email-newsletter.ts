@@ -10,6 +10,7 @@
 import type { step as InngestStep } from "inngest";
 import { z } from "zod";
 import { getAIProvider } from "../../lib/ai-client";
+import type { ResearchPack } from "../../lib/research-provider";
 
 // Zod schema for structured output
 const emailNewsletterSchema = z.object({
@@ -50,9 +51,13 @@ function buildEmailPrompt(
   blogTitle: string,
   blogContent: string,
   excerpt: string,
+  research?: ResearchPack,
 ): string {
   // Limit content length to prevent token overflow
   const truncatedContent = blogContent.substring(0, 3000);
+  const researchSection = research
+    ? `\nREALTIME RESEARCH CONTEXT:\nKey Findings:\n${research.keyFindings.map((v) => `- ${v}`).join("\n")}\n\nTrending Angles:\n${research.trendingAngles.map((v) => `- ${v}`).join("\n")}\n`
+    : "";
 
   return `Create a professional email newsletter based on this blog article.
 
@@ -62,6 +67,7 @@ BLOG EXCERPT: ${excerpt}
 
 FULL ARTICLE (truncated):
 ${truncatedContent}
+${researchSection}
 
 Create an email newsletter with:
 
@@ -115,6 +121,7 @@ export async function generateEmailNewsletter(
   blogTitle: string,
   blogContent: string,
   excerpt: string,
+  research?: ResearchPack,
 ): Promise<{
   subjectLines: string[];
   previewText: string;
@@ -128,7 +135,7 @@ export async function generateEmailNewsletter(
     console.log("[EMAIL] Calling AI provider...");
     const response = await ai.generateContent(
       EMAIL_SYSTEM_PROMPT,
-      buildEmailPrompt(blogTitle, blogContent, excerpt),
+      buildEmailPrompt(blogTitle, blogContent, excerpt, research),
     );
     console.log("[EMAIL] Raw response:", response.substring(0, 200));
 
@@ -157,6 +164,16 @@ export async function generateEmailNewsletter(
     }
 
     console.log("[EMAIL] Validating with Zod...");
+    if (
+      parsed?.emailNewsletter?.previewText &&
+      typeof parsed.emailNewsletter.previewText === "string" &&
+      parsed.emailNewsletter.previewText.length > 100
+    ) {
+      parsed.emailNewsletter.previewText = parsed.emailNewsletter.previewText
+        .slice(0, 100)
+        .trim();
+    }
+
     const validated = EmailNewsletterResponseSchema.parse(parsed);
     console.log("[EMAIL] Validation passed");
 

@@ -8,6 +8,7 @@
 import type { step as InngestStep } from "inngest";
 import { z } from "zod";
 import { getAIProvider } from "../../lib/ai-client";
+import type { ResearchPack } from "../../lib/research-provider";
 
 // Zod schema for structured output
 const socialPostsSchema = z.object({
@@ -41,6 +42,24 @@ const SocialPostsResponseSchema = z.object({
   socialPosts: socialPostsSchema,
 });
 
+function cleanAndExtractJson(raw: string): string {
+  let cleaned = raw.trim();
+  const fencedMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fencedMatch?.[1]) {
+    cleaned = fencedMatch[1].trim();
+  }
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+  return (jsonMatch?.[0] ?? cleaned).trim();
+}
+
+function trimToWordBoundary(value: string, maxLength: number): string {
+  if (value.length <= maxLength) return value;
+  const hard = value.slice(0, maxLength - 3);
+  const soft = hard.replace(/\s+\S*$/, "").trim();
+  const head = soft.length >= Math.floor(maxLength * 0.6) ? soft : hard.trim();
+  return `${head}...`;
+}
+
 // System prompt
 const SOCIAL_SYSTEM_PROMPT = `You are a viral social media marketing expert who understands each platform's unique audience, tone, and best practices. 
 
@@ -58,7 +77,12 @@ function buildSocialPrompt(
   blogTitle: string,
   blogContent: string,
   excerpt: string,
+  research?: ResearchPack,
 ): string {
+  const researchSection = research
+    ? `\nREALTIME RESEARCH CONTEXT:\nKey Findings:\n${research.keyFindings.map((v) => `- ${v}`).join("\n")}\n\nTrending Angles:\n${research.trendingAngles.map((v) => `- ${v}`).join("\n")}\n\nUse only claims that can be supported by these findings.\n`
+    : "";
+
   return `Create platform-specific social media posts for this blog article.
 
 BLOG TITLE: ${blogTitle}
@@ -67,6 +91,7 @@ BLOG EXCERPT: ${excerpt}
 
 KEY POINTS FROM ARTICLE:
 ${blogContent.substring(0, 800)}...
+${researchSection}
 
 Create 5 unique posts optimized for each platform:
 
@@ -120,6 +145,7 @@ export async function generateSocialPosts(
   blogTitle: string,
   blogContent: string,
   excerpt: string,
+  research?: ResearchPack,
 ): Promise<{
   twitter: string;
   linkedin: string;
@@ -134,26 +160,34 @@ export async function generateSocialPosts(
     console.log("[SOCIAL-POSTS] Calling AI provider...");
     const response = await ai.generateContent(
       SOCIAL_SYSTEM_PROMPT,
-      buildSocialPrompt(blogTitle, blogContent, excerpt),
+      buildSocialPrompt(blogTitle, blogContent, excerpt, research),
     );
     console.log("[SOCIAL-POSTS] Raw response:", response.substring(0, 200));
 
     console.log("[SOCIAL-POSTS] Parsing JSON...");
-    const parsed = JSON.parse(response);
+    const parsed = JSON.parse(cleanAndExtractJson(response)) as {
+      socialPosts?: {
+        twitter?: string;
+        linkedin?: string;
+        facebook?: string;
+        instagram?: string;
+        medium?: string;
+      };
+    };
+
+    // Normalize before schema validation so hard limits don't fail the pipeline.
+    if (parsed.socialPosts?.twitter && typeof parsed.socialPosts.twitter === "string") {
+      parsed.socialPosts.twitter = trimToWordBoundary(parsed.socialPosts.twitter.trim(), 280);
+    }
+
     console.log("[SOCIAL-POSTS] Validating with Zod...");
     const validated = SocialPostsResponseSchema.parse(parsed);
     console.log("[SOCIAL-POSTS] Validation passed");
 
-    // Safety check: Truncate Twitter if needed
-    const twitter =
-      validated.socialPosts.twitter.length > 280
-        ? `${validated.socialPosts.twitter.substring(0, 277)}...`
-        : validated.socialPosts.twitter;
-
     console.log("[SOCIAL-POSTS] Social posts generated successfully!");
 
     return {
-      twitter,
+      twitter: validated.socialPosts.twitter,
       linkedin: validated.socialPosts.linkedin,
       facebook: validated.socialPosts.facebook,
       instagram: validated.socialPosts.instagram,
