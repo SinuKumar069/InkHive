@@ -200,6 +200,7 @@ export default function CreatePage() {
                     {exampleTopics.map((example, index) => (
                       <button
                         key={index}
+                        type="button"
                         onClick={() => setTopic(example)}
                         className="px-3 py-1.5 text-xs sm:text-sm bg-white/5 text-foreground rounded-full border border-white/10 hover:bg-white/10 transition-colors"
                       >
