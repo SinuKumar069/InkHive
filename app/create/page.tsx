@@ -75,6 +75,8 @@ export default function CreatePage() {
           projectId,
           inputType,
           inputContent: inputContent.trim(),
+          generationMode: "grounded",
+          researchEnabled: true,
         }),
       });
 

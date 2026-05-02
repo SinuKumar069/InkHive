@@ -3,7 +3,13 @@ import { inngest } from "@/inngest/client";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { projectId, inputType, inputContent } = body;
+    const {
+      projectId,
+      inputType,
+      inputContent,
+      generationMode = "grounded",
+      researchEnabled = true,
+    } = body;
 
     // Send event to Inngest
     await inngest.send({
@@ -12,6 +18,8 @@ export async function POST(request: Request) {
         projectId,
         inputType,
         inputContent,
+        generationMode,
+        researchEnabled,
       },
     });
 
