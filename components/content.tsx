@@ -64,7 +64,6 @@ export default function Content() {
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-3">
-              <Cpu className="w-6 h-6 text-primary" />
               <h1 className="text-3xl font-medium tracking-tight text-foreground">
                 Welcome {isLoaded ? user?.firstName : "back"}
               </h1>

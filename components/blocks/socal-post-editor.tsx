@@ -27,6 +27,7 @@ import {
   Send,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Facebook, Instagram, LinkedIn, XTwitter } from "../ui/svgs";
 
 type ContentProject = Doc<"contentProjects">;
 type SocialPlatform = "twitter" | "linkedin" | "facebook" | "instagram" | "medium";
@@ -49,10 +50,10 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
     icon: ComponentType<{ className?: string }>;
     phase1Enabled: boolean;
   }[] = [
-    { key: "twitter", label: "Twitter/X", color: "bg-black", icon: Share2, phase1Enabled: true },
-    { key: "linkedin", label: "LinkedIn", color: "bg-blue-600", icon: Share2, phase1Enabled: true },
-    { key: "facebook", label: "Facebook", color: "bg-blue-500", icon: Share2, phase1Enabled: true },
-    { key: "instagram", label: "Instagram", color: "bg-pink-500", icon: Share2, phase1Enabled: true },
+    { key: "twitter", label: "Twitter/X", color: "bg-black", icon: XTwitter, phase1Enabled: true },
+    { key: "linkedin", label: "LinkedIn", color: "bg-blue-600", icon: LinkedIn, phase1Enabled: true },
+    { key: "facebook", label: "Facebook", color: "bg-blue-500", icon: Facebook, phase1Enabled: true },
+    { key: "instagram", label: "Instagram", color: "bg-pink-500", icon: Instagram, phase1Enabled: true },
     { key: "medium", label: "Medium", color: "bg-slate-800", icon: FileText, phase1Enabled: false },
   ];
 
@@ -251,7 +252,7 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
             key={platform.key}
             className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-sm p-4 sm:p-8 transition-all hover:bg-white/10"
           >
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2 sm:gap-3">
                 <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shadow-sm ${platform.color} shrink-0`}>
                   <platform.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
@@ -322,8 +323,8 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
               </div>
             ) : (
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/5 rounded-2xl pointer-events-none" />
-                <p className="text-sm sm:text-[15px] text-foreground/90 whitespace-pre-wrap bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 leading-relaxed font-normal break-words">
+                <div className="absolute inset-0 bg-linear-to-b from-transparent to-background/5 rounded-2xl pointer-events-none" />
+                <p className="text-sm sm:text-[15px] text-foreground/90 whitespace-pre-wrap bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 leading-relaxed font-normal wrap-break-word">
                   {post.text}
                 </p>
               </div>
@@ -351,15 +352,15 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
                 return (
                   <label
                     key={platform.key}
-                    className={`flex items-center justify-between rounded-xl border px-3 py-2.5 ${
+                    className={`flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5 ${
                       connected ? "border-white/10 bg-white/5" : "border-white/5 bg-black/20 opacity-60"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex min-w-0 items-center gap-2.5">
                       <div className={`h-7 w-7 rounded-md flex items-center justify-center ${platform.color}`}>
                         <platform.icon className="h-3.5 w-3.5 text-white" />
                       </div>
-                      <span className="text-sm text-foreground">{platform.label}</span>
+                      <span className="truncate text-sm text-foreground">{platform.label}</span>
                     </div>
 
                     <input
