@@ -25,6 +25,9 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "InkHive | AI Content Marketing",
   description: "Transform one idea into a thriving ecosystem of content. Generate blog posts, social media, and email newsletters with AI.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
