@@ -18,46 +18,15 @@ export function Instagram(props: SVGProps<SVGSVGElement>) {
                     x2="21"
                     y2="3"
                     gradientUnits="userSpaceOnUse">
-                    <stop
-                        offset="0%"
-                        stopColor="#FEDA75"
-                    />
-                    <stop
-                        offset="45%"
-                        stopColor="#FA7E1E"
-                    />
-                    <stop
-                        offset="70%"
-                        stopColor="#D62976"
-                    />
-                    <stop
-                        offset="100%"
-                        stopColor="#4F5BD5"
-                    />
+                    <stop offset="0%" stopColor="#FEDA75" />
+                    <stop offset="45%" stopColor="#FA7E1E" />
+                    <stop offset="70%" stopColor="#D62976" />
+                    <stop offset="100%" stopColor="#4F5BD5" />
                 </linearGradient>
             </defs>
-            <rect
-                x={3}
-                y={3}
-                width={18}
-                height={18}
-                rx={5}
-                stroke="url(#instagram-gradient)"
-                strokeWidth={2}
-            />
-            <circle
-                cx={12}
-                cy={12}
-                r={4}
-                stroke="url(#instagram-gradient)"
-                strokeWidth={2}
-            />
-            <circle
-                cx={17.5}
-                cy={6.5}
-                r={1.25}
-                fill="#D62976"
-            />
+            <rect x={3} y={3} width={18} height={18} rx={5} stroke="url(#instagram-gradient)" strokeWidth={2} />
+            <circle cx={12} cy={12} r={4} stroke="url(#instagram-gradient)" strokeWidth={2} />
+            <circle cx={17.5} cy={6.5} r={1.25} fill="#D62976" />
         </svg>
     )
 }
