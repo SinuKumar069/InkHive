@@ -132,6 +132,7 @@ export const updateProjectStatus = mutation({
       v.literal("generating"),
       v.literal("completed"),
       v.literal("failed"),
+      v.literal("canceled"),
     ),
   },
   handler: async (ctx, args) => {
@@ -170,6 +171,7 @@ export const updateJobStatus = mutation({
       v.literal("completed"),
       v.literal("failed"),
       v.literal("skipped"),
+      v.literal("canceled"),
     ),
   },
   handler: async (ctx, args) => {
@@ -202,6 +204,50 @@ export const setGenerationMode = mutation({
 
     await ctx.db.patch(args.projectId, {
       generationMode: args.generationMode,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Cancel a generating project
+ * Requires authentication - called from UI
+ * Preserves already-completed jobs and their content
+ */
+export const cancelProject = mutation({
+  args: {
+    projectId: v.id("contentProjects"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project || project.userId !== userId) {
+      throw new Error("Project not found");
+    }
+
+    if (project.status !== "generating") {
+      throw new Error("Can only cancel projects that are currently generating");
+    }
+
+    const jobs = project.jobStatus || {};
+    const preserveResearch = (s?: string): "completed" | "skipped" | "canceled" =>
+      s === "completed" || s === "skipped" ? s : "canceled";
+    const preserveJob = (s?: string): "completed" | "canceled" =>
+      s === "completed" ? "completed" : "canceled";
+
+    await ctx.db.patch(args.projectId, {
+      status: "canceled",
+      jobStatus: {
+        research: preserveResearch(jobs.research),
+        blogPost: preserveJob(jobs.blogPost),
+        socialPosts: preserveJob(jobs.socialPosts),
+        emailNewsletter: preserveJob(jobs.emailNewsletter),
+        seoMetadata: preserveJob(jobs.seoMetadata),
+      },
       updatedAt: Date.now(),
     });
   },

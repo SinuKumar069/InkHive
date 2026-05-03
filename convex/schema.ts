@@ -24,6 +24,7 @@ export default defineSchema({
       v.literal("generating"),
       v.literal("completed"),
       v.literal("failed"),
+      v.literal("canceled"),
     ),
 
     // Granular job status tracking
@@ -36,6 +37,7 @@ export default defineSchema({
             v.literal("completed"),
             v.literal("failed"),
             v.literal("skipped"),
+            v.literal("canceled"),
           ),
         ),
         blogPost: v.optional(
@@ -44,6 +46,7 @@ export default defineSchema({
             v.literal("running"),
             v.literal("completed"),
             v.literal("failed"),
+            v.literal("canceled"),
           ),
         ),
         socialPosts: v.optional(
@@ -52,6 +55,7 @@ export default defineSchema({
             v.literal("running"),
             v.literal("completed"),
             v.literal("failed"),
+            v.literal("canceled"),
           ),
         ),
         emailNewsletter: v.optional(
@@ -60,6 +64,7 @@ export default defineSchema({
             v.literal("running"),
             v.literal("completed"),
             v.literal("failed"),
+            v.literal("canceled"),
           ),
         ),
         seoMetadata: v.optional(
@@ -68,6 +73,7 @@ export default defineSchema({
             v.literal("running"),
             v.literal("completed"),
             v.literal("failed"),
+            v.literal("canceled"),
           ),
         ),
       }),
@@ -85,6 +91,7 @@ export default defineSchema({
           v.literal("completed"),
           v.literal("failed"),
           v.literal("skipped"),
+          v.literal("canceled"),
         ),
         errorCode: v.optional(v.string()),
         errorMessage: v.optional(v.string()),

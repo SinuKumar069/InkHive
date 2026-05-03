@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,8 @@ import {
   Sparkles,
   Box,
   ArrowLeft,
+  XCircle,
+  Ban,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -75,6 +77,10 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("blog");
   const [isFallbackGenerating, setIsFallbackGenerating] = useState(false);
   const [showQuotaDialog, setShowQuotaDialog] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+
+  const cancelMutation = useMutation(api.contentProjects.cancelProject);
 
   useEffect(() => {
     if (project === null) {
@@ -130,6 +136,31 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCancelGeneration = async () => {
+    setIsCanceling(true);
+    try {
+      // Step 1: Mark project as canceled in Convex (authenticated)
+      await cancelMutation({ projectId });
+
+      // Step 2: Send cancel event to Inngest to stop the pipeline
+      await fetch("/api/cancel-generation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId }),
+      });
+
+      toast.success("Generation canceled. Any completed content has been preserved.");
+      setShowCancelDialog(false);
+    } catch (error) {
+      console.error("Cancel error:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to cancel generation",
+      );
+    } finally {
+      setIsCanceling(false);
+    }
+  };
+
   const tabLinks = [
     {
       label: "Blog Post",
@@ -155,6 +186,7 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
+      {/* Quota exceeded dialog */}
       <Dialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
         <DialogContent>
           <DialogHeader>
@@ -173,6 +205,48 @@ export default function DashboardPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel generation confirmation dialog */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-destructive" />
+              Cancel content generation?
+            </DialogTitle>
+            <DialogDescription>
+              This will stop all remaining AI generation steps and save tokens. Any content that has already been generated will be preserved.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelDialog(false)}
+              disabled={isCanceling}
+            >
+              Keep generating
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelGeneration}
+              disabled={isCanceling}
+            >
+              {isCanceling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Canceling...
+                </>
+              ) : (
+                <>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Cancel generation
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/50 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
@@ -236,6 +310,25 @@ export default function DashboardPage() {
               </div>
               
               <div className="flex items-center gap-3 self-end sm:self-center">
+                {/* Cancel button — only visible while generating */}
+                {project.status === "generating" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCancelDialog(true)}
+                    disabled={isCanceling}
+                    className="border-red-500/30 bg-red-500/5 text-red-400 hover:bg-red-500/15 hover:text-red-300 hover:border-red-500/50 transition-all"
+                  >
+                    {isCanceling ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <XCircle className="mr-2 h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">Cancel generation</span>
+                    <span className="sm:hidden">Cancel</span>
+                  </Button>
+                )}
+
                 <Link
                   href="/dashboard"
                   className="group flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-white/10 hover:text-foreground"
@@ -264,6 +357,26 @@ export default function DashboardPage() {
                       <JobStatusBadge key={name} name={name} status={status} />
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Show canceled banner with partial content info */}
+              {project.status === "canceled" && (
+                <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4">
+                  <div className="flex items-center gap-2 text-sm font-medium text-amber-400">
+                    <Ban className="h-4 w-4" />
+                    Generation was canceled
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Any content that was already generated is preserved below.
+                  </p>
+                  {Object.keys(jobs).length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {Object.entries(jobs).map(([name, status]) => (
+                        <JobStatusBadge key={name} name={name} status={status} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
           </section>
@@ -349,6 +462,11 @@ function StatusBadge({ status }: { status: string }) {
       text: "text-red-500",
       icon: <AlertCircle className="h-3 w-3" />,
     },
+    canceled: {
+      bg: "bg-amber-500/10 border-amber-500/20",
+      text: "text-amber-500",
+      icon: <XCircle className="h-3 w-3" />,
+    },
   };
 
   const { bg, text, icon } = config[status] || config.draft;
@@ -384,6 +502,16 @@ function JobStatusBadge({ name, status }: { name: string; status?: string }) {
       icon: <AlertCircle className="h-3 w-3 text-red-500" />,
       bg: "bg-red-500/10 border border-red-500/20",
       text: "text-red-500",
+    },
+    skipped: {
+      icon: <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" />,
+      bg: "bg-white/5 border border-white/10",
+      text: "text-muted-foreground/70",
+    },
+    canceled: {
+      icon: <XCircle className="h-3 w-3 text-amber-500" />,
+      bg: "bg-amber-500/10 border border-amber-500/20",
+      text: "text-amber-500",
     },
   };
 

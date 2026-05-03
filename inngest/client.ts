@@ -30,6 +30,13 @@ export type ContentPipelineEvent = {
   };
 };
 
+export type ContentCancelEvent = {
+  name: "content/cancel";
+  data: {
+    projectId: string;
+  };
+};
+
 export type PublishContentEvent = {
   name: "content/publish";
   data: {
