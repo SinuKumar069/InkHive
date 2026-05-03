@@ -14,10 +14,16 @@
  * 3. Save all results to Convex
  * 4. Update status to "completed"
  *
+ * Cancellation:
+ * - Uses Inngest cancelOn to listen for "content/cancel" events
+ * - Each step checks Convex project status before expensive AI work
+ * - Already-completed content is preserved after cancellation
+ *
  * Benefits:
  * - Parallel execution: All agents run simultaneously (5x faster)
  * - Durable execution: Automatic retries on failure
  * - Real-time updates: UI shows progress via Convex subscriptions
+ * - Cancellable: Users can abort generation to save AI tokens
  */
 import { inngest } from "../client";
 import { generateBlogPost } from "../steps/ai-generation/blog-post";
@@ -40,6 +46,12 @@ export const contentPipeline = inngest.createFunction(
     id: "content-pipeline",
     optimizeParallelism: true,
     retries: 3,
+    cancelOn: [
+      {
+        event: "content/cancel",
+        if: "async.data.projectId == event.data.projectId",
+      },
+    ],
     triggers: [{ event: "content/generate" }],
   },
   async ({ event, step }) => {
@@ -50,6 +62,18 @@ export const contentPipeline = inngest.createFunction(
       generationMode = "grounded",
       researchEnabled = true,
     } = event.data;
+
+    /**
+     * Check if the project has been canceled in Convex.
+     * Called at the start of each step to avoid expensive AI work
+     * after the user clicks cancel.
+     */
+    const isCanceled = async (): Promise<boolean> => {
+      const project = await convex.query(api.contentProjects.getProjectById, {
+        projectId,
+      });
+      return project?.status === "canceled";
+    };
 
   // console.log(`Starting content pipeline for project ${projectId}`);
 
@@ -71,6 +95,11 @@ export const contentPipeline = inngest.createFunction(
 
       if (shouldRunResearch) {
         const researchResult = await step.run("research-and-grounding", async () => {
+          // Guard: skip expensive work if already canceled
+          if (await isCanceled()) {
+            return { ok: false as const, canceled: true as const };
+          }
+
           await convex.mutation(api.contentProjects.updateResearchStatus, {
             projectId,
             status: "running",
@@ -104,6 +133,11 @@ export const contentPipeline = inngest.createFunction(
           }
         });
 
+        // Handle canceled during research
+        if (!researchResult.ok && "canceled" in researchResult) {
+          return { success: false, projectId, reason: "canceled" };
+        }
+
         if (!researchResult.ok) {
           return {
             success: false,
@@ -124,6 +158,9 @@ export const contentPipeline = inngest.createFunction(
 
       // Step 2: Agent 1 - Generate Blog Post
       const blogPost = await step.run("generate-blog-post", async () => {
+        // Guard: skip expensive AI call if already canceled
+        if (await isCanceled()) return null;
+
         await convex.mutation(api.contentProjects.updateJobStatus, {
           projectId,
           jobName: "blogPost",
@@ -131,6 +168,9 @@ export const contentPipeline = inngest.createFunction(
         });
 
         const result = await generateBlogPost(step, inputType, inputContent, research);
+
+        // Check again before saving — cancel may have arrived mid-generation
+        if (await isCanceled()) return null;
 
         await convex.mutation(api.contentProjects.saveBlogPost, {
           projectId,
@@ -149,9 +189,16 @@ export const contentPipeline = inngest.createFunction(
         return result;
       });
 
+      // If blog post was skipped due to cancellation, stop the pipeline
+      if (!blogPost) {
+        return { success: false, projectId, reason: "canceled" };
+      }
+
       // Step 3: Run remaining agents in parallel
       // Agent 2: Social Posts
       const socialPostsPromise = step.run("generate-social-posts", async () => {
+        if (await isCanceled()) return null;
+
         await convex.mutation(api.contentProjects.updateJobStatus, {
           projectId,
           jobName: "socialPosts",
@@ -165,6 +212,8 @@ export const contentPipeline = inngest.createFunction(
           blogPost.excerpt,
           research,
         );
+
+        if (await isCanceled()) return null;
 
         await convex.mutation(api.contentProjects.saveSocialPosts, {
           projectId,
@@ -186,6 +235,8 @@ export const contentPipeline = inngest.createFunction(
 
       // Agent 3: Email Newsletter
       const emailPromise = step.run("generate-email-newsletter", async () => {
+        if (await isCanceled()) return null;
+
         await convex.mutation(api.contentProjects.updateJobStatus, {
           projectId,
           jobName: "emailNewsletter",
@@ -199,6 +250,8 @@ export const contentPipeline = inngest.createFunction(
           blogPost.excerpt,
           research,
         );
+
+        if (await isCanceled()) return null;
 
         await convex.mutation(api.contentProjects.saveEmailNewsletter, {
           projectId,
@@ -219,6 +272,8 @@ export const contentPipeline = inngest.createFunction(
 
       // Agent 4: SEO Metadata
       const seoPromise = step.run("generate-seo-metadata", async () => {
+        if (await isCanceled()) return null;
+
         await convex.mutation(api.contentProjects.updateJobStatus, {
           projectId,
           jobName: "seoMetadata",
@@ -232,6 +287,8 @@ export const contentPipeline = inngest.createFunction(
           blogPost.excerpt,
           research,
         );
+
+        if (await isCanceled()) return null;
 
         await convex.mutation(api.contentProjects.saveSeoMetadata, {
           projectId,
@@ -252,6 +309,11 @@ export const contentPipeline = inngest.createFunction(
 
       // Wait for all parallel jobs to complete
       await Promise.allSettled([socialPostsPromise, emailPromise, seoPromise]);
+
+      // Final guard: don't mark completed if canceled while parallel steps ran
+      if (await isCanceled()) {
+        return { success: false, projectId, reason: "canceled" };
+      }
 
       // Step 4: Mark project as completed
       await step.run("update-status-completed", async () => {
