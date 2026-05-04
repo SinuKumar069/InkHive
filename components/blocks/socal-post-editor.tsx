@@ -17,7 +17,6 @@ import {
 import {
   Edit3,
   Save,
-  FileText,
   Loader2,
   Share2,
   Check,
@@ -54,7 +53,6 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
     { key: "linkedin", label: "LinkedIn", color: "bg-blue-600", icon: LinkedIn, phase1Enabled: true },
     { key: "facebook", label: "Facebook", color: "bg-blue-500", icon: Facebook, phase1Enabled: true },
     { key: "instagram", label: "Instagram", color: "bg-pink-500", icon: Instagram, phase1Enabled: true },
-    { key: "medium", label: "Medium", color: "bg-slate-800", icon: FileText, phase1Enabled: false },
   ];
 
   const connectedByPlatform = useMemo(() => {
@@ -178,7 +176,7 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
 
   return (
     <div className="space-y-6">
-      {/* <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 sm:p-6">
+      <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 sm:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h3 className="text-lg sm:text-xl font-semibold tracking-tight text-foreground">
@@ -243,7 +241,7 @@ export function SocialPostsEditor({ project }: { project: ContentProject }) {
               );
             })}
         </div>
-      </div> */}
+      </div>
 
       {platforms.map((platform) => {
         const post = socialPosts[platform.key];

@@ -7,9 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Edit3, Save, X, FileText, Loader2 } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Edit3, Save, X, FileText, Loader2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
+import { markdownToHtml } from "@/lib/markdown-to-html";
+import { trackEvent } from "@/lib/analytics";
 
 type ContentProject = Doc<"contentProjects">;
 
@@ -20,6 +30,8 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
     const [content, setContent] = useState(project.blogPost?.content || "");
     const [excerpt, setExcerpt] = useState(project.blogPost?.excerpt || "");
     const [isSaving, setIsSaving] = useState(false);
+    const [isMediumDialogOpen, setIsMediumDialogOpen] = useState(false);
+    const [isPreparingMedium, setIsPreparingMedium] = useState(false);
 
     // Update local state when project updates
     useEffect(() => {
@@ -78,6 +90,55 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
     }
 
     const blogPost = project.blogPost;
+    const handleOpenMedium = () => {
+        setIsPreparingMedium(true);
+        const mediumWindow = window.open(
+            "https://medium.com/new-story",
+            "_blank",
+            "noopener,noreferrer",
+        );
+
+        const htmlBody = markdownToHtml(blogPost.content);
+        const htmlDocument = `<h1>${blogPost.title}</h1><p><em>${blogPost.excerpt}</em></p>${htmlBody}`;
+        const plainText = `${blogPost.title}\n\n${blogPost.excerpt}\n\n${blogPost.content}`;
+
+        trackEvent("medium_open_click", { projectId: project._id });
+
+        const copyAndNotify = async () => {
+            try {
+                if (typeof ClipboardItem !== "undefined") {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({
+                            "text/html": new Blob([htmlDocument], { type: "text/html" }),
+                            "text/plain": new Blob([plainText], { type: "text/plain" }),
+                        }),
+                    ]);
+                } else {
+                    await navigator.clipboard.writeText(plainText);
+                }
+                toast.success("Ready to paste in Medium", {
+                    description:
+                        "Your full blog content was copied automatically. Use Cmd+V (Mac) or Ctrl+V (Windows) in the Medium editor.",
+                    duration: 7000,
+                });
+            } catch {
+                toast.error("Could not copy automatically", {
+                    description: "Use Copy as HTML or Copy as Markdown, then paste in Medium.",
+                });
+            } finally {
+                mediumWindow?.focus();
+                setIsPreparingMedium(false);
+            }
+        };
+
+        void copyAndNotify();
+        setIsMediumDialogOpen(false);
+    };
+
+    const handleOpenMediumDialog = () => {
+        trackEvent("medium_help_viewed", { projectId: project._id });
+        setIsMediumDialogOpen(true);
+    };
 
     return (
         <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 shadow-sm p-4 sm:p-10">
@@ -100,6 +161,16 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {!isEditing && (
+                        <Button
+                            onClick={handleOpenMediumDialog}
+                            disabled={isPreparingMedium}
+                            className="bg-foreground text-background hover:bg-foreground/90 transition-all shadow-sm"
+                        >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Open in Medium
+                        </Button>
+                    )}
                     <Button
                         variant="outline"
                         onClick={() => {
@@ -170,15 +241,42 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
                 </div>
             ) : (
                 <div className="mx-auto w-full max-w-4xl">
-                    <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-foreground mb-4 sm:mb-6 break-words">
+                    <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-foreground mb-4 sm:mb-6 wrap-break-word">
                         {blogPost.title}
                     </h1>
                     <p className="text-base sm:text-xl text-muted-foreground mb-8 sm:mb-12 italic border-l-4 border-primary/50 pl-4 sm:pl-6 py-3 bg-primary/5 rounded-r-xl break-words leading-relaxed">
                         {blogPost.excerpt}
                     </p>
-                    <MarkdownRenderer content={blogPost.content} className="break-words" />
+                    <MarkdownRenderer content={blogPost.content} className="wrap-break-word" />
                 </div>
             )}
+
+            <Dialog open={isMediumDialogOpen} onOpenChange={setIsMediumDialogOpen}>
+                <DialogContent className="sm:max-w-[520px]">
+                    <DialogHeader>
+                        <DialogTitle>Publish to Medium</DialogTitle>
+                        <DialogDescription>
+                            We’ll copy your blog content automatically, then open Medium in a new tab.
+                            Paste there using
+                        </DialogDescription>
+                        <DialogDescription className="bg-white/10 p-2 rounded-md w-fit font-mono text-xs sm:text-sm border-dashed border">
+                            Cmd+V (Mac) or Ctrl+V (Windows)
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsMediumDialogOpen(false)}
+                            disabled={isPreparingMedium}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleOpenMedium} disabled={isPreparingMedium}>
+                            {isPreparingMedium ? "Preparing..." : "Continue to Medium"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

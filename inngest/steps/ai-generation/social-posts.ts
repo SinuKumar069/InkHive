@@ -2,7 +2,7 @@
  * Agent 2: Social Media Posts Generator
  *
  * Generates platform-specific social media posts from blog content
- * Platforms: Twitter/X, LinkedIn, Facebook, Instagram, Medium
+ * Platforms: Twitter/X, LinkedIn, Facebook, Instagram
  * Character limits and platform best practices enforced
  */
 import type { step as InngestStep } from "inngest";
@@ -30,11 +30,6 @@ const socialPostsSchema = z.object({
     .string()
     .describe(
       "Instagram caption - engaging storytelling, 2-4 emojis, CTA included",
-    ),
-  medium: z
-    .string()
-    .describe(
-      "Medium post - brief excerpt with hook, encourages click to full article",
     ),
 });
 
@@ -67,8 +62,7 @@ Platform Guidelines:
 - Twitter: Punchy, scroll-stopping, under 280 chars
 - LinkedIn: Professional insights, longer form, thought leadership
 - Facebook: Community-focused, conversational, shareable
-- Instagram: Visual storytelling, emoji-friendly, engaging hooks
-- Medium: Brief teaser that entices readers to read full article`;
+- Instagram: Visual storytelling, emoji-friendly, engaging hooks`;
 
 /**
  * Builds prompt for social posts generation
@@ -93,7 +87,7 @@ KEY POINTS FROM ARTICLE:
 ${blogContent.substring(0, 800)}...
 ${researchSection}
 
-Create 5 unique posts optimized for each platform:
+Create 4 unique posts optimized for each platform:
 
 1. TWITTER (MAXIMUM 280 characters - STRICT LIMIT):
    - Start with a hook
@@ -119,20 +113,13 @@ Create 5 unique posts optimized for each platform:
    - Build community connection
    - Include clear CTA
 
-5. MEDIUM (brief excerpt):
-   - Hook readers to click full article
-   - 2-3 sentences maximum
-   - Compelling and intriguing
-   - Link to full post implied
-
 Return as JSON with this structure:
 {
   "socialPosts": {
     "twitter": "...",
     "linkedin": "...",
     "facebook": "...",
-    "instagram": "...",
-    "medium": "..."
+    "instagram": "..."
   }
 }`;
 }
@@ -151,7 +138,6 @@ export async function generateSocialPosts(
   linkedin: string;
   facebook: string;
   instagram: string;
-  medium: string;
 }> {
   console.log("[SOCIAL-POSTS] Generating social posts");
 
@@ -171,7 +157,6 @@ export async function generateSocialPosts(
         linkedin?: string;
         facebook?: string;
         instagram?: string;
-        medium?: string;
       };
     };
 
@@ -191,7 +176,6 @@ export async function generateSocialPosts(
       linkedin: validated.socialPosts.linkedin,
       facebook: validated.socialPosts.facebook,
       instagram: validated.socialPosts.instagram,
-      medium: validated.socialPosts.medium,
     };
   } catch (error) {
     console.error("[SOCIAL-POSTS] Generation error:", error);
