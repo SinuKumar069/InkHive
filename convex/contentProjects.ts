@@ -429,7 +429,6 @@ export const saveSocialPosts = mutation({
     linkedin: v.string(),
     facebook: v.string(),
     instagram: v.string(),
-    medium: v.string(),
   },
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
@@ -455,8 +454,9 @@ export const saveSocialPosts = mutation({
           text: args.instagram,
           status: "draft",
         },
+        // Medium publishing uses blog post content directly via the blog tab flow.
         medium: {
-          text: args.medium,
+          text: "",
           status: "draft",
         },
         isEdited: false,

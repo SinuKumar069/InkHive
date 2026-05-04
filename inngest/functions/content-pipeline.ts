@@ -221,7 +221,6 @@ export const contentPipeline = inngest.createFunction(
           linkedin: result.linkedin,
           facebook: result.facebook,
           instagram: result.instagram,
-          medium: result.medium,
         });
 
         await convex.mutation(api.contentProjects.updateJobStatus, {
