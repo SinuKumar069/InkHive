@@ -42,6 +42,7 @@ SEO Best Practices:
 - Keywords: Mix of head terms and long-tail keywords
 - Slugs: Short, descriptive, kebab-case, no stop words
 - Focus on search intent and user value
+- Do not use emojis in any field
 
 IMPORTANT: Keep meta description between 150-160 characters only.`;
 
@@ -92,6 +93,9 @@ Generate SEO metadata:
    - Use kebab-case (hyphens between words)
    - Remove stop words (and, the, a, etc.)
    - Include primary keyword
+
+5. GLOBAL STYLE RULE:
+   - Do not use emojis in title, description, keywords, or slug
 
 Return as JSON with this structure:
 {

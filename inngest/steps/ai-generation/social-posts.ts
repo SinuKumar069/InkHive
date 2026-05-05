@@ -28,9 +28,7 @@ const socialPostsSchema = z.object({
     ),
   instagram: z
     .string()
-    .describe(
-      "Instagram caption - engaging storytelling, 2-4 emojis, CTA included",
-    ),
+    .describe("Instagram caption - engaging storytelling, CTA included"),
 });
 
 const SocialPostsResponseSchema = z.object({
@@ -62,7 +60,10 @@ Platform Guidelines:
 - Twitter: Punchy, scroll-stopping, under 280 chars
 - LinkedIn: Professional insights, longer form, thought leadership
 - Facebook: Community-focused, conversational, shareable
-- Instagram: Visual storytelling, emoji-friendly, engaging hooks`;
+- Instagram: Visual storytelling, engaging hooks
+
+Critical rule:
+- Do not use emojis in any output for any platform.`;
 
 /**
  * Builds prompt for social posts generation
@@ -93,7 +94,7 @@ Create 4 unique posts optimized for each platform:
    - Start with a hook
    - Include main value proposition
    - Make it quotable
-   - Can use 1-2 relevant emojis
+   - Do not use emojis
 
 2. LINKEDIN (1-2 paragraphs):
    - Professional, thought-leadership tone
@@ -109,7 +110,7 @@ Create 4 unique posts optimized for each platform:
 
 4. INSTAGRAM (caption style):
    - Engaging storytelling
-   - Use 2-4 emojis strategically
+   - Do not use emojis
    - Build community connection
    - Include clear CTA
 

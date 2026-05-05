@@ -23,7 +23,8 @@ Output rules:
 - keyFindings: 5-8 concise factual bullets from current sources.
 - trendingAngles: 3-5 short trend angles suitable for social campaigns.
 - sources: 3-8 reputable sources with title, url, domain, publishedAt (if known).
-- Do not include claims that cannot be tied to a source.`;
+- Do not include claims that cannot be tied to a source.
+- Do not use emojis anywhere in the response.`;
 
 function extractDomain(url: string): string {
   try {

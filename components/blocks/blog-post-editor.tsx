@@ -244,7 +244,7 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
                     <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-foreground mb-4 sm:mb-6 wrap-break-word">
                         {blogPost.title}
                     </h1>
-                    <p className="text-base sm:text-xl text-muted-foreground mb-8 sm:mb-12 italic border-l-4 border-primary/50 pl-4 sm:pl-6 py-3 bg-primary/5 rounded-r-xl break-words leading-relaxed">
+                    <p className="text-base sm:text-xl text-muted-foreground mb-8 sm:mb-12 italic border-l-4 border-primary/50 pl-4 sm:pl-6 py-3 bg-primary/5 rounded-r-xl wrap-break-word leading-relaxed">
                         {blogPost.excerpt}
                     </p>
                     <MarkdownRenderer content={blogPost.content} className="wrap-break-word" />
@@ -252,7 +252,7 @@ export function BlogPostEditor({ project }: { project: ContentProject }) {
             )}
 
             <Dialog open={isMediumDialogOpen} onOpenChange={setIsMediumDialogOpen}>
-                <DialogContent className="sm:max-w-[520px]">
+                <DialogContent className="sm:max-w-130">
                     <DialogHeader>
                         <DialogTitle>Publish to Medium</DialogTitle>
                         <DialogDescription>

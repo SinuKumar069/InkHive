@@ -1,0 +1,11 @@
+{
+  "title": "InkHive Docs",
+  "pages": [
+    "index",
+    "overview",
+    "architecture",
+    "api-reference",
+    "deployment",
+    "full-documentation"
+  ]
+}

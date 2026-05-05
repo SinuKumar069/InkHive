@@ -97,7 +97,7 @@ export function ReviewCustomizeCard() {
                      </div>
                   </div>
                   <div className="flex-1 rounded-lg border border-white/5 bg-[#181818] p-2.5 text-[9px] text-zinc-300 sm:p-3 sm:text-[11px] leading-relaxed">
-                     Remote work isn't what it used to be. 💡 In 2024, it's about strategic hybrid models that boost flexibility without losing collaboration. The future is intentional, not accidental. 🚀 #FutureOfWork #RemoteWork
+                     Remote work isn&apos;t what it used to be. 💡 In 2024, it&apos;s about strategic hybrid models that boost flexibility without losing collaboration. The future is intentional, not accidental. 🚀 #FutureOfWork #RemoteWork
                   </div>
                   <div className="mt-3 flex justify-end gap-2">
                      <button className="rounded border border-white/10 px-2 py-1 text-[8px] font-medium hover:bg-white/5 sm:text-[10px]">Cancel</button>
@@ -120,7 +120,7 @@ export function ReviewCustomizeCard() {
                         <span className="rounded border border-white/10 px-1 text-[6px] uppercase tracking-wider text-zinc-500">Advanced</span>
                      </div>
                      <div className={`${inputBg} flex-1 overflow-hidden font-mono text-[6px] leading-tight text-zinc-400 sm:text-[8px]`}>
-                        &lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;body &#123; margin: 0; padding: 0; width: 100%; font-family: Arial; &#125; .email-container &#123; max-width: 600px; margin: 0 auto; &#125;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class="email-container"&gt;&lt;div class="header"&gt;&lt;h1&gt;The Future of Remote Work...
+                        &lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;style&gt;body &#123; margin: 0; padding: 0; width: 100%; font-family: Arial; &#125; .email-container &#123; max-width: 600px; margin: 0 auto; &#125;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;email-container&quot;&gt;&lt;div class=&quot;header&quot;&gt;&lt;h1&gt;The Future of Remote Work...
                      </div>
                   </div>
                   <div className="flex min-h-0 flex-1 flex-col">
