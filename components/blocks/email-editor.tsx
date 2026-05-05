@@ -74,7 +74,7 @@ export function EmailEditor({ project }: { project: ContentProject }) {
                             Email content will appear here
                         </h4>
                         <p className="text-muted-foreground/60 mt-3">
-                            Once generated, you'll be able to preview and edit it here.
+                            Once generated, you&apos;ll be able to preview and edit it here.
                         </p>
                     </div>
                 )}

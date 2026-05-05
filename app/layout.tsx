@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
+import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,25 +39,27 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} min-h-screen bg-background text-foreground antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} min-h-screen bg-background text-foreground antialiased flex flex-col`}
       >
-        <ClerkProvider>
-          <ConvexClientProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
-            <Toaster 
-              position="bottom-right" 
-              toastOptions={{
-                style: {
-                  background: '#FAFAF9',
-                  border: '1px solid #E7E5E4',
-                  borderRadius: '0.75rem',
-                },
-              }}
-            />
-          </ConvexClientProvider>
-        </ClerkProvider>
+        <RootProvider theme={{ defaultTheme: "dark", enableSystem: false }}>
+          <ClerkProvider>
+            <ConvexClientProvider>
+              <TooltipProvider>
+                {children}
+              </TooltipProvider>
+              <Toaster 
+                position="bottom-right" 
+                toastOptions={{
+                  style: {
+                    background: '#FAFAF9',
+                    border: '1px solid #E7E5E4',
+                    borderRadius: '0.75rem',
+                  },
+                }}
+              />
+            </ConvexClientProvider>
+          </ClerkProvider>
+        </RootProvider>
       </body>
     </html>
   );

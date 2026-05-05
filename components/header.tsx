@@ -12,6 +12,7 @@ import type { MouseEvent } from "react"
 const menuItems = [
     { name: 'How it works', href: '/#how-it-works' },
     { name: 'Integrations', href: '/#integrations' },
+    { name: 'Docs', href: '/docs' },
 ]
 
 export const Header = () => {

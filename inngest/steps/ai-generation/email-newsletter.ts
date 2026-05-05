@@ -41,6 +41,7 @@ Email Best Practices:
 - Mobile-responsive design
 - Clear call-to-action
 - Keep paragraphs short and scannable
+- Do not use emojis anywhere in the response
 
 IMPORTANT: Return valid JSON only, with proper escaping.`;
 
@@ -101,6 +102,7 @@ IMPORTANT:
 - Escape all quotes properly
 - Keep HTML content under 5000 characters
 - Do not include markdown code blocks in JSON values
+- Do not use emojis in subject lines, preview text, HTML content, or plain text
 
 Return as JSON with this structure:
 {

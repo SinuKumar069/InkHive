@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, TriangleAlert } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 interface DeleteResourceProps {
   open: boolean
@@ -34,17 +34,17 @@ export function DeleteResource({
   errorMessage,
 }: DeleteResourceProps) {
   const [confirmation, setConfirmation] = useState("")
-
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
       setConfirmation("")
     }
-  }, [open])
+    onOpenChange(nextOpen)
+  }
 
   const isValid = confirmation === "Delete Project"
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[440px] lg:max-w-[600px]">
         <DialogHeader>
           <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10 text-destructive">

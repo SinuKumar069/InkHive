@@ -41,7 +41,8 @@ Writing Guidelines:
 - Include actionable insights and examples
 - End with a compelling conclusion and CTA
 - Write in a professional yet accessible tone
-- Aim for 1000-1500 words`;
+- Aim for 1000-1500 words
+- Do not use emojis anywhere in the response`;
 
 /**
  * Builds prompt for blog post generation
@@ -65,6 +66,7 @@ Requirements:
 - Actionable insights and practical examples
 - Professional conclusion with clear CTA
 - SEO-optimized throughout
+- Do not use emojis
 
 Return as JSON with this structure:
 {
@@ -86,6 +88,7 @@ Requirements:
 - Use engaging headers and structure
 - Make it unique and valuable
 - Include actionable takeaways
+- Do not use emojis
 
 Return as JSON with this structure:
 {

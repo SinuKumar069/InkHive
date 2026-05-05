@@ -75,13 +75,6 @@ export function HeroSection() {
                             }}
                             className="absolute inset-0 -z-20">
                             {null}
-                            {/* <img
-                                src="https://ik.imagekit.io/lrigu76hy/tailark/night-background.jpg?updatedAt=1745733451120"
-                                alt="background"
-                                className="absolute inset-x-0 top-56 -z-20 hidden lg:top-32 dark:block"
-                                width="3276"
-                                height="4095"
-                            /> */}
                         </AnimatedGroup>
                         <div aria-hidden className="absolute inset-0 -z-10 size-full bg-[radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--background)_75%)]" />
                         <div className="mx-auto max-w-7xl px-6">
@@ -145,9 +138,12 @@ export function HeroSection() {
                                         asChild
                                         size="lg"
                                         variant="ghost"
-                                        className="h-10.5 rounded-xl px-5">
-                                        <Link href="/#how-it-works" onClick={scrollToHowItWorks}>
-                                            <span className="text-nowrap">See How It Works</span>
+                                        className="group h-10.5 rounded-xl border border-white/15 bg-white/4 px-5 text-white/90 shadow-sm shadow-black/20 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/9 hover:text-white">
+                                        <Link href="/docs">
+                                            <span className="flex items-center gap-2 text-nowrap font-medium tracking-wide">
+                                                Documentation
+                                                <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+                                            </span>
                                         </Link>
                                     </Button>
                                 </AnimatedGroup>
