@@ -1,4 +1,4 @@
-import { Lightbulb, FileText, Sparkles } from 'lucide-react'
+import { Lightbulb, FileText } from 'lucide-react'
 
 export function StartTopicCard() {
   return (
@@ -57,7 +57,6 @@ export function StartTopicCard() {
 
       {/* Generate Button */}
       <button className="flex w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-semibold text-black transition-colors hover:bg-zinc-200">
-        <Sparkles className="size-3.5 sm:size-4 md:size-5" />
         Generate Content
       </button>
     </div>

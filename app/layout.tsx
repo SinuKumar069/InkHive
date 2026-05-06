@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { ConvexClientProvider } from "@/components/providers/convex-client-provider";
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import { RootProvider } from "fumadocs-ui/provider/next";
@@ -45,7 +46,7 @@ export default function RootLayout({
           <ClerkProvider>
             <ConvexClientProvider>
               <TooltipProvider>
-                {children}
+                <SmoothScrollProvider>{children}</SmoothScrollProvider>
               </TooltipProvider>
               <Toaster 
                 position="bottom-right" 

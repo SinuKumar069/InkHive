@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, Sparkles, FileText, Lightbulb, Cpu } from "lucide-react";
+import { ArrowLeft, Loader2, FileText, Lightbulb, } from "lucide-react";
 import Link from "next/link";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 
@@ -115,16 +115,13 @@ export default function CreatePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-4">
           <Link href="/">
             <Button 
-              variant="ghost" 
               size="sm"
-              className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <Cpu className="w-5 h-5 text-primary" />
             <span className="font-semibold tracking-tight text-foreground">
               New Content Task
             </span>
@@ -250,9 +247,7 @@ export default function CreatePage() {
                   </>
                 ) : (
                   <>
-                    <Cpu className="h-5 w-5 mr-2" />
                     Generate Content
-                    <Sparkles className="h-5 w-5 ml-2" />
                   </>
                 )}
               </Button>

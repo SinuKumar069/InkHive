@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { formatDate, truncateText } from "@/lib/utils";
-import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Cpu, Box, MoreVertical, Trash2 } from "lucide-react";
+import { Plus, Loader2, FileText, Share2, Mail, Globe, ArrowRight, Box, MoreVertical, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import {
@@ -103,7 +103,7 @@ export default function Content() {
         /* Empty State */
         <AnimatedGroup variants={transitionVariants}>
           <Card className="bg-white/5 border-white/10 shadow-sm backdrop-blur-sm rounded-3xl overflow-hidden relative">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent pointer-events-none" />
             <CardContent className="pt-16 pb-16 text-center relative z-10">
               <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 shadow-sm shadow-black/10">
                 <Box className="w-10 h-10 text-primary" />

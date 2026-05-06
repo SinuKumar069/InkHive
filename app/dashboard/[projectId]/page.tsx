@@ -18,7 +18,6 @@ import {
   Share2,
   Mail,
   Globe,
-  Sparkles,
   Box,
   ArrowLeft,
   XCircle,
@@ -344,7 +343,6 @@ export default function DashboardPage() {
                 <div className="mt-4 rounded-lg border border-white/10 bg-background/40 p-4">
                   <div className="mb-3 flex items-center justify-between gap-2">
                     <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                      <Sparkles className="h-4 w-4 animate-pulse text-primary" />
                       Agents processing... {progress}%
                     </span>
                     <span className="text-xs text-muted-foreground">

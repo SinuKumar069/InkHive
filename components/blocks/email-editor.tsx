@@ -52,7 +52,7 @@ export function EmailEditor({ project }: { project: ContentProject }) {
     if (!project.emailNewsletter) {
         return (
             <div className="text-center py-24 px-6 bg-white/5 backdrop-blur-sm rounded-[32px] border border-white/10 shadow-2xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent pointer-events-none" />
                 {project.status === "generating" ? (
                     <div className="flex flex-col items-center relative z-10">
                         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mb-8 shadow-inner border border-primary/20 animate-pulse">
@@ -112,7 +112,7 @@ export function EmailEditor({ project }: { project: ContentProject }) {
                                     key={idx}
                                     className={`p-5 rounded-2xl border transition-all duration-300 group relative ${selectedSubject === idx
                                         ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(var(--primary-rgb),0.05)]"
-                                        : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
+                                        : "border-white/5 bg-white/2 hover:border-white/10 hover:bg-white/4"
                                         }`}
                                     onClick={() => setSelectedSubject(idx)}
                                 >

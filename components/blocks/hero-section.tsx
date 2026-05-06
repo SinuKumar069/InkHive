@@ -128,7 +128,7 @@ export function HeroSection() {
                                             asChild
                                             size="lg"
                                             className="rounded-xl border border-white/10 bg-white px-5 text-base text-zinc-950 shadow-sm hover:bg-zinc-100">
-                                            <Link href="/dashboard      ">
+                                            <Link href="/create">
                                                 <span className="text-nowrap">Start Creating</span>
                                             </Link>
                                         </Button>
